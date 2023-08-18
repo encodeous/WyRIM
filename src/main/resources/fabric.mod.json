@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "id": "wyrim",
+  "version": "${version}",
+  "name": "WyRIM",
+  "description": "WyRIM is a mod that enables players to easily organize their items on the server Wynncraft",
+  "authors": [],
+  "contact": {},
+  "license": "MIT",
+  "icon": "assets/wyrim/icon.png",
+  "environment": "client",
+  "entrypoints": {
+    "main": [
+      "ca.encodeous.wyrim.WyRIM"
+    ]
+  },
+  "mixins": [
+    "wyrim.mixins.json"
+  ],
+  "depends": {
+    "fabricloader": ">=${loader_version}",
+    "fabric": "*",
+    "minecraft": "${minecraft_version}",
+    "wynntils": "*"
+  },
+  "accessWidener" : "wyrim.accessWidener"
+}

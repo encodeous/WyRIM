@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CompilerConfiguration">
+    <annotationProcessing>
+      <profile name="Gradle Imported" enabled="true">
+        <outputRelativeToContentRoot value="true" />
+        <option name="defaultObfuscationEnv" value="named:intermediary" />
+        <option name="inMapFileNamedIntermediary" value="C:\Users\encodeous\.gradle\caches\fabric-loom\1.19.4\loom.mappings.1_19_4.layered+hash.2198-v2\mappings.tiny" />
+        <option name="outMapFileNamedIntermediary" value="C:\Projects\encodeous\WyRIM\build\loom-cache\mixin-map-loom.mappings.1_19_4.layered+hash.2198-v2.main.tiny" />
+        <option name="outRefMapFile" value="C:\Projects\encodeous\WyRIM\build\classes\java\main\WyRIM-refmap.json" />
+        <option name="quiet" value="true" />
+        <processorPath useClasspath="false">
+          <entry name="$USER_HOME$/.gradle/caches/modules-2/files-2.1/com.github.llamalad7.mixinextras/mixinextras-common/0.2.0-beta.9/785a162c75ed9f90c43feb0a52a0f12e79d33ea6/mixinextras-common-0.2.0-beta.9.jar" />
+        </processorPath>
+        <module name="WyRIM.main" />
+      </profile>
+    </annotationProcessing>
+    <bytecodeTargetLevel target="17" />
+  </component>
+</project>
