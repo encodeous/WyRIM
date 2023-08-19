@@ -12,8 +12,8 @@ import com.wynntils.utils.type.CappedValue;
 import java.util.UUID;
 
 public class HadesUser {
-    private final UUID uuid;
-    private final String name;
+    private final UUID uuid = null;
+    private final String name = null;
 
     private boolean isPartyMember;
     private boolean isMutualFriend;
@@ -73,6 +73,6 @@ public class HadesUser {
     }
 
     public CustomColor getRelationColor() {
-
+        return null;
     }
 }

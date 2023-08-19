@@ -9,8 +9,8 @@ import java.util.Set;
 import net.minecraftforge.eventbus.api.Event;
 
 public abstract class HadesRelationsUpdateEvent extends Event {
-    private final Set<String> changedPlayers;
-    private final ChangeType changeType;
+    private final Set<String> changedPlayers = null;
+    private final ChangeType changeType = null;
 
     protected HadesRelationsUpdateEvent(Set<String> changedPlayers, ChangeType changeType) {
 

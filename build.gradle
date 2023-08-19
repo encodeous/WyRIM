@@ -82,6 +82,7 @@ jar {
     from("LICENSE") {
         rename { "${it}_${project.archivesBaseName}"}
     }
+    exclude 'com/wynntils/**'
 }
 
 // configure the maven publication
