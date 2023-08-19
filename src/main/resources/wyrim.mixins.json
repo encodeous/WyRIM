@@ -4,6 +4,7 @@
   "package": "ca.encodeous.wyrim.mixin",
   "compatibilityLevel": "JAVA_17",
   "mixins": [
+    "WynntilsModMixin"
   ],
   "client": [
   ],

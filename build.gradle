@@ -3,6 +3,8 @@ import org.apache.commons.io.FileUtils
 plugins {
     id 'fabric-loom' version '1.2-SNAPSHOT'
     id 'maven-publish'
+    id 'com.github.johnrengelman.shadow' version '8.1.1'
+    id 'java'
 }
 
 version = project.mod_version
@@ -30,16 +32,37 @@ dependencies {
     minecraft "com.mojang:minecraft:${project.minecraft_version}"
     mappings loom.officialMojangMappings()
 
-    // Artemis stuff
     modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
-    compileOnly "net.minecraftforge:eventbus:${forge_eventbus_version}"
-    implementation(annotationProcessor("com.github.llamalad7.mixinextras:mixinextras-common:${mixinextras_version}"))
 
     // Fabric API. This is technically optional, but you probably want it anyway.
     modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
-//    compileOnly(project(":common"))
+
+    // Artemis stuff
+    compileOnly "net.minecraftforge:eventbus:${forge_eventbus_version}"
+    implementation(annotationProcessor("com.github.llamalad7.mixinextras:mixinextras-common:${mixinextras_version}"))
+
+    // Reflection library
+    implementation "net.vidageek:mirror:1.6.1"
+
+    shadow "net.vidageek:mirror:1.6.1"
 }
 
+tasks.register('sourcesJar', Jar) {
+    from sourceSets.main.allSource
+    from sourceSets.main.resources
+}
+
+shadowJar {
+    exclude 'com/wynntils/**'
+    relocate "net.vidageek", "ca.encodeous.shadow.net.vidageek"
+
+    configurations = [project.configurations.shadow]
+}
+
+remapJar {
+    dependsOn shadowJar
+    inputFile = shadowJar.archiveFile
+}
 
 processResources {
     inputs.property "version", project.version
