@@ -2,6 +2,7 @@ package ca.encodeous.wyrim.features;
 
 import ca.encodeous.wyrim.inventory.BankUtils;
 import ca.encodeous.wyrim.inventory.ScreenUtils;
+import ca.encodeous.wyrim.models.item.WyRimMappedItem;
 import ca.encodeous.wyrim.models.ui.WyRimSession;
 import ca.encodeous.wyrim.models.ui.client.RimSession;
 import ca.encodeous.wyrim.models.ui.server.BankSession;
@@ -19,10 +20,14 @@ import net.minecraft.world.inventory.ChestMenu;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 
+import java.util.ArrayList;
+
 public class RefinedItemManagerFeature extends Feature {
 
     protected WyRimSession session = null;
     private boolean isSearching = false;
+    private boolean preserveDefaultBehaviour = false;
+    private ArrayList<WyRimMappedItem> itemCache = null;
 
     @SubscribeEvent(priority = EventPriority.LOWEST)
     public void onScreenInit(ScreenInitEvent e) {
@@ -30,13 +35,18 @@ public class RefinedItemManagerFeature extends Feature {
         if (!(screen.getMenu() instanceof ChestMenu)) return;
 
         if(Models.Container.isBankScreen(screen)){
-            ensureSession((AbstractContainerScreen<ChestMenu>) screen);
+            if(McUtils.player().isCrouching() || preserveDefaultBehaviour){
+                itemCache = null;
+                preserveDefaultBehaviour = true;
+            }else{
+                ensureSession((AbstractContainerScreen<ChestMenu>) screen);
+            }
         }
     }
 
     @SubscribeEvent
     public void onContainerSetContent(ContainerSetContentEvent.Post event) {
-        if(session == null) return;
+        if(session == null || preserveDefaultBehaviour) return;
         refreshPage();
 
         if(isSearching){
@@ -56,13 +66,21 @@ public class RefinedItemManagerFeature extends Feature {
             session = new WyRimSession();
             session.serverSession = new BankSession(bankScreen);
             session.clientSession = new RimSession(new WyRimScreen(McUtils.player(), session));
-            isSearching = true;
+            if(itemCache != null){
+                session.serverSession.allItems.addAll(itemCache);
+                finalizeSearch();
+            }
+            else{
+                isSearching = true;
+            }
         }
         session.serverSession.bankScreen = bankScreen;
         refreshPage();
     }
 
     private void finalizeSearch(){
+        itemCache = new ArrayList<>();
+        itemCache.addAll(session.serverSession.allItems);
         session.clientSession.rimScreen.getMenu().items.clear();
         session.clientSession.rimScreen.getMenu().items.addAll(session.serverSession.allItems.stream().map(x->x.item).toList());
         session.clientSession.rimScreen.getMenu().refresh();
@@ -78,6 +96,7 @@ public class RefinedItemManagerFeature extends Feature {
     @SubscribeEvent(priority = EventPriority.HIGHEST)
     public void onScreenClose(ScreenClosedEvent e) {
         session = null;
+        preserveDefaultBehaviour = false;
 //        if (!(e.getScreen() instanceof AbstractContainerScreen<?> screen)) return;
 //
 //        if(Models.Container.isBankScreen(screen)){
