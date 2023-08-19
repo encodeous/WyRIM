@@ -11,3 +11,8 @@ Run:
 ```shell
 gradle :wyrimSetup
 ```
+
+### Attribution
+
+*WyRIM is built on top of the hard work done by the Wynntils Developers. It depends on Wynntils to handle many of the Wynncraft specific tasks. **To run WyRIM, Wynntils must be also installed***
+
