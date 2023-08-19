@@ -55,7 +55,7 @@ public class RefinedItemManagerFeature extends Feature {
             McUtils.sendMessageToClient(Component.literal("Analyzing Bank...").withStyle(ChatFormatting.GRAY));
             session = new WyRimSession();
             session.serverSession = new BankSession(bankScreen);
-            session.clientSession = new RimSession(new WyRimScreen(McUtils.player()));
+            session.clientSession = new RimSession(new WyRimScreen(McUtils.player(), session));
             isSearching = true;
         }
         session.serverSession.bankScreen = bankScreen;

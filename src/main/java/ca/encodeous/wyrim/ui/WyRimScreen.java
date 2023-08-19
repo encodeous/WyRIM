@@ -1,7 +1,10 @@
 package ca.encodeous.wyrim.ui;
 
+import ca.encodeous.wyrim.models.ui.WyRimSession;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
+import com.wynntils.core.components.Models;
+import com.wynntils.utils.wynn.ItemUtils;
 import net.minecraft.client.gui.ComponentPath;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.components.events.GuiEventListener;
@@ -11,6 +14,8 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.TooltipFlag;
+import net.vidageek.mirror.dsl.Mirror;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Optional;
@@ -22,13 +27,16 @@ public class WyRimScreen extends AbstractContainerScreen<WyRimMenu> {
     private EditBox searchBox;
     private float scrollOffs;
     private boolean scrolling;
+    private final WyRimSession session;
     private static final int scrollBarOffsetX = 170;
     private static final int scrollBarOffsetY = 18;
     private static final int scrollBarHeight = 112;
     private static final int scrollBarWidth = 14;
 
-    public WyRimScreen(Player player) {
+    public WyRimScreen(Player player, WyRimSession session) {
         super(new WyRimMenu(player), player.getInventory(), Component.literal("Your Bank"));
+
+        this.session = session;
 
         this.imageHeight = 114 + WyRimMenu.CONTAINER_ROWS * 18;
         this.inventoryLabelY = this.imageHeight - 94;
@@ -62,7 +70,6 @@ public class WyRimScreen extends AbstractContainerScreen<WyRimMenu> {
 
         this.searchBox.render(poseStack, mouseY, delta, mouseX);
 
-
         if (menu.canScroll()) {
             int ax = this.leftPos + scrollBarOffsetX;
             int ay = this.topPos + scrollBarOffsetY;
@@ -77,6 +84,51 @@ public class WyRimScreen extends AbstractContainerScreen<WyRimMenu> {
             RenderSystem.setShaderTexture(0, SCROLL_BAR_BUTTON);
             blit(poseStack, ax, ay + (int) (temp * this.scrollOffs), 232, 0, 12, 15);
         }
+    }
+
+    private void refreshSearchResults() {
+        this.menu.items.clear();
+
+        String string = this.searchBox.getValue();
+        if (string.isEmpty()) {
+            this.menu.items.addAll(session.serverSession.allItems.stream().map(x -> x.item).toList());
+        } else {
+            var filtered = session.serverSession.allItems.stream().map(x -> x.item).filter(x -> {
+
+                if (x.getDisplayName().getString().toLowerCase().contains(string.toLowerCase())) return true;
+                if (x.getTooltipLines(null, TooltipFlag.NORMAL).stream().anyMatch(y -> y.getString().toLowerCase().contains(string.toLowerCase())))
+                    return true;
+                var wynnItemOpt = Models.Item.getWynnItem(x);
+                if (wynnItemOpt.isEmpty()) return false;
+                var wynnItem = wynnItemOpt.get();
+                return wynnItem.toString().toLowerCase().contains(string.toLowerCase());
+            }).toList();
+            this.menu.items.addAll(filtered);
+        }
+
+        this.scrollOffs = 0.0F;
+        this.menu.scrollTo(0.0F);
+    }
+
+    public boolean charTyped(char c, int i) {
+        String string = this.searchBox.getValue();
+        if (this.searchBox.charTyped(c, i)) {
+            if (!string.equals(this.searchBox.getValue())) {
+                refreshSearchResults();
+            }
+        }
+        return false;
+    }
+
+    public boolean keyPressed(int i, int j, int k) {
+        String string = this.searchBox.getValue();
+        if (this.searchBox.keyPressed(i, j, k)) {
+            if (!string.equals(this.searchBox.getValue())) {
+                refreshSearchResults();
+            }
+        }
+        if(searchBox.isFocused()) return true;
+        return super.keyPressed(i, j, k);
     }
 
     @Override
@@ -120,45 +172,40 @@ public class WyRimScreen extends AbstractContainerScreen<WyRimMenu> {
         return super.mouseDragged(d, e, i, f, g);
     }
 
-   public boolean mouseClicked(double d, double e, int i) {
-     if (i == 0) {
-       if (insideScrollbar(d, e)) {
-         this.scrolling = menu.canScroll();
-         return true;
-       }
-     }
+    public boolean mouseClicked(double d, double e, int i) {
+        if (i == 0) {
+            if (insideScrollbar(d, e)) {
+                this.scrolling = menu.canScroll();
+                return true;
+            }
+        }
 
-     return super.mouseClicked(d, e, i);
-   }
+        return super.mouseClicked(d, e, i);
+    }
 
-   protected boolean insideScrollbar(double qx, double qy) {
-     int cx = this.leftPos;
-     int cy = this.topPos;
+    protected boolean insideScrollbar(double qx, double qy) {
+        int cx = this.leftPos;
+        int cy = this.topPos;
 
-     int x = cx + scrollBarOffsetX;
-     int y = cy + scrollBarOffsetY;
-     int x1 = x + scrollBarWidth;
-     int y1 = y + scrollBarHeight;
-     return (qx >= x && qy >= y && qx < x1 && qy < y1);
-   }
+        int x = cx + scrollBarOffsetX;
+        int y = cy + scrollBarOffsetY;
+        int x1 = x + scrollBarWidth;
+        int y1 = y + scrollBarHeight;
+        return (qx >= x && qy >= y && qx < x1 && qy < y1);
+    }
 
 
-   public boolean mouseReleased(double d, double e, int i) {
-     if (i == 0) {
-       this.scrolling = false;
-     }
+    public boolean mouseReleased(double d, double e, int i) {
+        if (i == 0) {
+            this.scrolling = false;
+        }
 
-     return super.mouseReleased(d, e, i);
-   }
+        return super.mouseReleased(d, e, i);
+    }
 
     @Override
     public boolean keyReleased(int i, int j, int k) {
         return super.keyReleased(i, j, k);
-    }
-
-    @Override
-    public boolean charTyped(char c, int i) {
-        return super.charTyped(c, i);
     }
 
     @Override
