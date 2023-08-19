@@ -35,8 +35,7 @@ public class BankUtils {
 
             int page = Models.Container.getCurrentBankPage(session.bankScreen);
 
-            if(!itemStack.isEmpty())
-                items.add(new WyRimMappedItem(i + page * container.getContainerSize(), itemStack));
+            items.add(new WyRimMappedItem(i + page * container.getContainerSize(), itemStack));
         }
         return items;
     }

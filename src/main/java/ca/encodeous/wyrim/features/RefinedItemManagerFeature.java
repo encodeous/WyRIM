@@ -12,7 +12,9 @@ import com.wynntils.mc.event.ContainerSetContentEvent;
 import com.wynntils.mc.event.ScreenClosedEvent;
 import com.wynntils.mc.event.ScreenInitEvent;
 import com.wynntils.utils.mc.McUtils;
+import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.inventory.ChestMenu;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -50,6 +52,7 @@ public class RefinedItemManagerFeature extends Feature {
      */
     private void ensureSession(AbstractContainerScreen<ChestMenu> bankScreen){
         if(session == null){
+            McUtils.sendMessageToClient(Component.literal("Analyzing Bank...").withStyle(ChatFormatting.GRAY));
             session = new WyRimSession();
             session.serverSession = new BankSession(bankScreen);
             session.clientSession = new RimSession(new WyRimScreen(McUtils.player()));

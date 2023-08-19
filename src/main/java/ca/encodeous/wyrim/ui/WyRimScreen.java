@@ -2,65 +2,88 @@ package ca.encodeous.wyrim.ui;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.wynntils.screens.base.TooltipProvider;
-import com.wynntils.utils.render.FontRenderer;
-import com.wynntils.utils.render.RenderUtils;
 import net.minecraft.client.gui.ComponentPath;
+import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.navigation.FocusNavigationEvent;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
-import net.minecraft.client.gui.screens.inventory.EffectRenderingInventoryScreen;
-import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Player;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.List;
 import java.util.Optional;
 
 public class WyRimScreen extends AbstractContainerScreen<WyRimMenu> {
+    private static final ResourceLocation SCROLL_BAR_BUTTON = new ResourceLocation("textures/gui/container/creative_inventory/tabs.png");
+    private static final ResourceLocation SCROLL_BAR = new ResourceLocation("textures/gui/container/creative_inventory/tab_item_search.png");
     private static final ResourceLocation CONTAINER_BACKGROUND = new ResourceLocation("textures/gui/container/generic_54.png");
+    private EditBox searchBox;
+    private float scrollOffs;
+    private boolean scrolling;
+    private static final int scrollBarOffsetX = 170;
+    private static final int scrollBarOffsetY = 18;
+    private static final int scrollBarHeight = 112;
+    private static final int scrollBarWidth = 14;
+
     public WyRimScreen(Player player) {
-        super(new WyRimMenu(player), player.getInventory(), CommonComponents.EMPTY);
+        super(new WyRimMenu(player), player.getInventory(), Component.literal("Your Bank"));
+
+        this.imageHeight = 114 + WyRimMenu.CONTAINER_ROWS * 18;
+        this.inventoryLabelY = this.imageHeight - 94;
     }
 
     @Override
-    protected void renderBg(PoseStack poseStack, float f, int i, int j) {
+    protected void init() {
+        super.init();
+
+        // search box
+        searchBox = new EditBox(this.font, this.leftPos + 88, this.topPos + 5, 80, 9, Component.translatable("itemGroup.search"));
+        searchBox.setMaxLength(50);
+        searchBox.setBordered(true);
+        searchBox.setVisible(true);
+        searchBox.setTextColor(16777215);
+        searchBox.setHint(Component.literal("Search items"));
+        addWidget(searchBox);
+    }
+
+    @Override
+    protected void renderBg(PoseStack poseStack, float mouseX, int mouseY, int delta) {
         RenderSystem.setShaderTexture(0, CONTAINER_BACKGROUND);
-        int k = (this.width - this.imageWidth) / 2;
-        int l = (this.height - this.imageHeight) / 2;
+        int x = (this.width - this.imageWidth) / 2;
+        int y = (this.height - this.imageHeight) / 2;
+        int m = y + 112;
 
         // draw container
-        blit(poseStack, k, l, 0, 0, this.imageWidth, WyRimMenu.CONTAINER_ROWS * 18 + 17);
+        blit(poseStack, x, y, 0, 0, this.imageWidth, WyRimMenu.CONTAINER_ROWS * 18 + 17);
         // draw player inventory
-        blit(poseStack, k, l + WyRimMenu.CONTAINER_ROWS * 18 + 17, 0, 126, this.imageWidth, 96);
+        blit(poseStack, x, y + WyRimMenu.CONTAINER_ROWS * 18 + 17, 0, 126, this.imageWidth, 96);
+
+        this.searchBox.render(poseStack, mouseY, delta, mouseX);
+
+
+        if (menu.canScroll()) {
+            int ax = this.leftPos + scrollBarOffsetX;
+            int ay = this.topPos + scrollBarOffsetY;
+            var temp = scrollBarHeight - 17;
+
+            RenderSystem.setShaderTexture(0, SCROLL_BAR);
+
+            blit(poseStack,
+                    ax + 2, ay - 18,
+                    178, 0,
+                    24, 213);
+            RenderSystem.setShaderTexture(0, SCROLL_BAR_BUTTON);
+            blit(poseStack, ax, ay + (int) (temp * this.scrollOffs), 232, 0, 12, 15);
+        }
     }
 
     @Override
     public void render(PoseStack poseStack, int i, int j, float f) {
+        renderBackground(poseStack);
         super.render(poseStack, i, j, f);
-
-    }
-
-    protected void renderTooltip(PoseStack poseStack, int mouseX, int mouseY) {
-//        List<Component> tooltipLines = List.of();
-//
-//        if (this.hovered instanceof TooltipProvider tooltipWidget) {
-//            tooltipLines = tooltipWidget.getTooltipLines();
-//        }
-//
-//        if (tooltipLines.isEmpty()) return;
-//
-//        RenderUtils.drawTooltipAt(
-//                poseStack,
-//                mouseX,
-//                mouseY,
-//                100,
-//                tooltipLines,
-//                FontRenderer.getInstance().getFont(),
-//                true);
+        renderTooltip(poseStack, i, j);
     }
 
     @Override
@@ -73,10 +96,60 @@ public class WyRimScreen extends AbstractContainerScreen<WyRimMenu> {
         super.mouseMoved(d, e);
     }
 
-    @Override
+
     public boolean mouseScrolled(double d, double e, double f) {
-        return super.mouseScrolled(d, e, f);
+        if (!menu.canScroll()) {
+            return false;
+        }
+        this.scrollOffs = this.menu.subtractInputFromScroll(this.scrollOffs, f);
+        this.menu.scrollTo(this.scrollOffs);
+        return true;
     }
+
+    public boolean mouseDragged(double d, double e, int i, double f, double g) {
+        if (this.scrolling) {
+            int j = this.topPos + 18;
+            int k = j + 112;
+
+            this.scrollOffs = ((float) e - j - 7.5F) / ((k - j) - 15.0F);
+            this.scrollOffs = Mth.clamp(this.scrollOffs, 0.0F, 1.0F);
+            this.menu.scrollTo(this.scrollOffs);
+
+            return true;
+        }
+        return super.mouseDragged(d, e, i, f, g);
+    }
+
+   public boolean mouseClicked(double d, double e, int i) {
+     if (i == 0) {
+       if (insideScrollbar(d, e)) {
+         this.scrolling = menu.canScroll();
+         return true;
+       }
+     }
+
+     return super.mouseClicked(d, e, i);
+   }
+
+   protected boolean insideScrollbar(double qx, double qy) {
+     int cx = this.leftPos;
+     int cy = this.topPos;
+
+     int x = cx + scrollBarOffsetX;
+     int y = cy + scrollBarOffsetY;
+     int x1 = x + scrollBarWidth;
+     int y1 = y + scrollBarHeight;
+     return (qx >= x && qy >= y && qx < x1 && qy < y1);
+   }
+
+
+   public boolean mouseReleased(double d, double e, int i) {
+     if (i == 0) {
+       this.scrolling = false;
+     }
+
+     return super.mouseReleased(d, e, i);
+   }
 
     @Override
     public boolean keyReleased(int i, int j, int k) {

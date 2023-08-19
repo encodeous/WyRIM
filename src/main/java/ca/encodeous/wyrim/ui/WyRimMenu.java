@@ -51,7 +51,7 @@ public class WyRimMenu extends AbstractContainerMenu {
     }
 
     protected int calculateRowCount() {
-        return Mth.positiveCeilDiv(this.items.size(), 9) - 5;
+        return Mth.positiveCeilDiv(this.items.size(), 9) - 6;
     }
 
     protected int getRowIndexForScroll(float f) {
@@ -68,7 +68,7 @@ public class WyRimMenu extends AbstractContainerMenu {
 
     public void scrollTo(float f) {
         int i = getRowIndexForScroll(f);
-        for (int j = 0; j < 5; j++) {
+        for (int j = 0; j < 6; j++) {
             for (int k = 0; k < 9; k++) {
                 int l = k + (j + i) * 9;
                 if (l >= 0 && l < this.items.size()) {
