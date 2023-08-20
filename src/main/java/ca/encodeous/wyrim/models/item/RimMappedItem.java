@@ -2,10 +2,10 @@ package ca.encodeous.wyrim.models.item;
 
 import net.minecraft.world.item.ItemStack;
 
-public class WyRimMappedItem {
+public class RimMappedItem {
     public int bankSlotId;
 
-    public WyRimMappedItem(int bankSlotId, ItemStack item) {
+    public RimMappedItem(int bankSlotId, ItemStack item) {
         this.bankSlotId = bankSlotId;
         this.item = item;
     }

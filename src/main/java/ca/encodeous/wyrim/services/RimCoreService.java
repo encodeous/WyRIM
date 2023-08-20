@@ -4,7 +4,7 @@ import ca.encodeous.wyrim.inventory.BankUtils;
 import ca.encodeous.wyrim.inventory.ScreenUtils;
 import ca.encodeous.wyrim.models.ui.client.RimSession;
 import ca.encodeous.wyrim.models.ui.server.BankSession;
-import ca.encodeous.wyrim.ui.WyRimScreen;
+import ca.encodeous.wyrim.ui.RimScreen;
 import com.wynntils.core.components.Service;
 import com.wynntils.utils.mc.McUtils;
 import net.minecraft.ChatFormatting;
@@ -13,10 +13,10 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.inventory.ChestMenu;
 
 import java.util.List;
-import static ca.encodeous.wyrim.WyRimServices.*;
+import static ca.encodeous.wyrim.RimServices.*;
 
-public class WyRimCoreService extends Service {
-    public WyRimCoreService() {
+public class RimCoreService extends Service {
+    public RimCoreService() {
         super(List.of());
     }
 
@@ -41,7 +41,7 @@ public class WyRimCoreService extends Service {
         McUtils.sendMessageToClient(Component.literal("Analyzing Bank...").withStyle(ChatFormatting.GRAY));
         Session.setBacking(new BankSession(screen));
         Session.setFront(new RimSession());
-        Session.getFront().setRimScreen(new WyRimScreen(McUtils.player()));
+        Session.getFront().setRimScreen(new RimScreen(McUtils.player()));
         if(Cache.hasCache()){
             Session.getBacking().items.addAll(Cache.getCachedItems());
             initRimSession();

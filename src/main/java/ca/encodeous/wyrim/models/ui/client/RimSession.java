@@ -1,14 +1,14 @@
 package ca.encodeous.wyrim.models.ui.client;
 
-import ca.encodeous.wyrim.models.item.WyRimMappedItem;
-import ca.encodeous.wyrim.ui.WyRimScreen;
+import ca.encodeous.wyrim.models.item.RimMappedItem;
+import ca.encodeous.wyrim.ui.RimScreen;
 import net.minecraft.core.NonNullList;
 
 public class RimSession {
-    public WyRimScreen rimScreen;
-    public final NonNullList<WyRimMappedItem> items = NonNullList.create();
+    public RimScreen rimScreen;
+    public final NonNullList<RimMappedItem> items = NonNullList.create();
 
-    public void setRimScreen(WyRimScreen rimScreen) {
+    public void setRimScreen(RimScreen rimScreen) {
         this.rimScreen = rimScreen;
     }
 }

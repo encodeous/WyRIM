@@ -1,6 +1,6 @@
 package ca.encodeous.wyrim.ui;
 
-import ca.encodeous.wyrim.models.item.WyRimMappedItem;
+import ca.encodeous.wyrim.models.item.RimMappedItem;
 import net.minecraft.core.NonNullList;
 import net.minecraft.util.Mth;
 import net.minecraft.world.SimpleContainer;
@@ -11,15 +11,15 @@ import net.minecraft.world.inventory.ClickType;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 
-import static ca.encodeous.wyrim.WyRimServices.*;
-public class WyRimMenu extends AbstractContainerMenu {
+import static ca.encodeous.wyrim.RimServices.*;
+public class RimMenu extends AbstractContainerMenu {
     protected final AbstractContainerMenu inventoryMenu;
     protected static final int CONTAINER_ROWS = 6;
     protected static final int SLOT_SIZE = 18;
     protected final SimpleContainer CONTAINER = new SimpleContainer(CONTAINER_ROWS * 9);
-    public final NonNullList<WyRimMappedItem> items;
+    public final NonNullList<RimMappedItem> items;
 
-    protected WyRimMenu(Player player) {
+    protected RimMenu(Player player) {
         super(null, 0);
 
         items = Session.getFront().items;

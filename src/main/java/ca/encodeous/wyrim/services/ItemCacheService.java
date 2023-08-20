@@ -1,10 +1,8 @@
 package ca.encodeous.wyrim.services;
 
-import ca.encodeous.wyrim.models.item.WyRimMappedItem;
+import ca.encodeous.wyrim.models.item.RimMappedItem;
 import com.wynntils.core.components.Service;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 public class ItemCacheService extends Service {
@@ -12,11 +10,11 @@ public class ItemCacheService extends Service {
         super(List.of());
     }
 
-    public List<WyRimMappedItem> getCachedItems() {
+    public List<RimMappedItem> getCachedItems() {
         return lastCachedItems;
     }
 
-    public void setCachedItems(List<WyRimMappedItem> lastCachedItems) {
+    public void setCachedItems(List<RimMappedItem> lastCachedItems) {
         this.lastCachedItems = List.copyOf(lastCachedItems);
     }
 
@@ -28,5 +26,5 @@ public class ItemCacheService extends Service {
         lastCachedItems = null;
     }
 
-    private List<WyRimMappedItem> lastCachedItems;
+    private List<RimMappedItem> lastCachedItems;
 }

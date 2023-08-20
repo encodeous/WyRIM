@@ -5,7 +5,7 @@ import net.minecraft.world.item.TooltipFlag;
 
 @FunctionalInterface
 public interface ItemPredicate {
-    boolean satisfies(WyRimMappedItem item);
+    boolean satisfies(RimMappedItem item);
     default ItemPredicate and(ItemPredicate other){
         return (item) -> satisfies(item) && other.satisfies(item);
     }

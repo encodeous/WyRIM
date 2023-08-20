@@ -1,30 +1,23 @@
 package ca.encodeous.wyrim.inventory;
 
-import ca.encodeous.wyrim.models.item.WyRimMappedItem;
+import ca.encodeous.wyrim.models.item.RimMappedItem;
 import ca.encodeous.wyrim.models.ui.server.BankSession;
-import com.wynntils.core.components.Managers;
 import com.wynntils.core.components.Models;
 import com.wynntils.core.text.StyledText;
 import com.wynntils.models.containers.type.SearchableContainerType;
 import com.wynntils.models.items.WynnItem;
-import com.wynntils.models.items.WynnItemCache;
 import com.wynntils.utils.wynn.ContainerUtils;
-import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.world.Container;
-import net.minecraft.world.inventory.ChestMenu;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
 import org.lwjgl.glfw.GLFW;
 
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Locale;
 import java.util.Optional;
 
 public class BankUtils {
-    public static ArrayList<WyRimMappedItem> mapItems(BankSession session){
+    public static ArrayList<RimMappedItem> mapItems(BankSession session){
         Container container = session.bankScreen.getMenu().getContainer();
-        ArrayList<WyRimMappedItem> items = new ArrayList<>();
+        ArrayList<RimMappedItem> items = new ArrayList<>();
         for (int i = 0; i < container.getContainerSize(); i++) {
             if (!SearchableContainerType.BANK.getBounds().getSlots().contains(i)) continue;
 
@@ -35,7 +28,7 @@ public class BankUtils {
 
             int page = Models.Container.getCurrentBankPage(session.bankScreen);
 
-            items.add(new WyRimMappedItem(i + page * container.getContainerSize(), itemStack));
+            items.add(new RimMappedItem(i + page * container.getContainerSize(), itemStack));
         }
         return items;
     }

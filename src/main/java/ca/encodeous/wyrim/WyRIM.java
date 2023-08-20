@@ -18,6 +18,6 @@ public class WyRIM implements ModInitializer {
         new Mirror().on(Managers.Feature).invoke()
                 .method("registerFeature").withArgs(new RefinedItemManagerFeature());
         new Mirror().on(WynntilsMod.class).invoke()
-                .method("registerComponents").withArgs(WyRimServices.class, Service.class);
+                .method("registerComponents").withArgs(RimServices.class, Service.class);
     }
 }
