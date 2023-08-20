@@ -1,5 +1,6 @@
 package ca.encodeous.wyrim.ui;
 
+import ca.encodeous.wyrim.models.item.WyRimMappedItem;
 import net.minecraft.core.NonNullList;
 import net.minecraft.util.Mth;
 import net.minecraft.world.SimpleContainer;
@@ -7,20 +8,21 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ClickType;
-import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
-import org.jetbrains.annotations.Nullable;
 
+import static ca.encodeous.wyrim.WyRimServices.*;
 public class WyRimMenu extends AbstractContainerMenu {
     protected final AbstractContainerMenu inventoryMenu;
     protected static final int CONTAINER_ROWS = 6;
     protected static final int SLOT_SIZE = 18;
     protected final SimpleContainer CONTAINER = new SimpleContainer(CONTAINER_ROWS * 9);
-    public final NonNullList<ItemStack> items = NonNullList.create();
+    public final NonNullList<WyRimMappedItem> items;
 
     protected WyRimMenu(Player player) {
         super(null, 0);
+
+        items = Session.getFront().items;
 
         Inventory inventory = player.getInventory();
 
@@ -72,7 +74,7 @@ public class WyRimMenu extends AbstractContainerMenu {
             for (int k = 0; k < 9; k++) {
                 int l = k + (j + i) * 9;
                 if (l >= 0 && l < this.items.size()) {
-                    CONTAINER.setItem(k + j * 9, this.items.get(l));
+                    CONTAINER.setItem(k + j * 9, this.items.get(l).item);
                 } else {
                     CONTAINER.setItem(k + j * 9, ItemStack.EMPTY);
                 }

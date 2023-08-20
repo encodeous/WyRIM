@@ -1,33 +1,21 @@
 package ca.encodeous.wyrim.features;
 
 import ca.encodeous.wyrim.inventory.BankUtils;
-import ca.encodeous.wyrim.inventory.ScreenUtils;
-import ca.encodeous.wyrim.models.item.WyRimMappedItem;
-import ca.encodeous.wyrim.models.ui.WyRimSession;
-import ca.encodeous.wyrim.models.ui.client.RimSession;
-import ca.encodeous.wyrim.models.ui.server.BankSession;
-import ca.encodeous.wyrim.ui.WyRimScreen;
 import com.wynntils.core.components.Models;
 import com.wynntils.core.consumers.features.Feature;
 import com.wynntils.mc.event.ContainerSetContentEvent;
 import com.wynntils.mc.event.ScreenClosedEvent;
 import com.wynntils.mc.event.ScreenInitEvent;
 import com.wynntils.utils.mc.McUtils;
-import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
-import net.minecraft.network.chat.Component;
 import net.minecraft.world.inventory.ChestMenu;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
-
-import java.util.ArrayList;
+import static ca.encodeous.wyrim.WyRimServices.*;
 
 public class RefinedItemManagerFeature extends Feature {
-
-    protected WyRimSession session = null;
     private boolean isSearching = false;
     private boolean preserveDefaultBehaviour = false;
-    private ArrayList<WyRimMappedItem> itemCache = null;
 
     @SubscribeEvent(priority = EventPriority.LOWEST)
     public void onScreenInit(ScreenInitEvent e) {
@@ -36,71 +24,38 @@ public class RefinedItemManagerFeature extends Feature {
 
         if(Models.Container.isBankScreen(screen)){
             if(McUtils.player().isCrouching() || preserveDefaultBehaviour){
-                itemCache = null;
                 preserveDefaultBehaviour = true;
+                Core.clearBankCache();
             }else{
-                ensureSession((AbstractContainerScreen<ChestMenu>) screen);
+                if(!Session.isActive()){
+                    if(Core.initBankSession((AbstractContainerScreen<ChestMenu>) screen)){
+                        isSearching = true;
+                    }
+                }
+                else{
+                    Session.getBacking().bankScreen = (AbstractContainerScreen<ChestMenu>) screen;
+                    Core.loadBankPage();
+                }
             }
         }
     }
 
     @SubscribeEvent
     public void onContainerSetContent(ContainerSetContentEvent.Post event) {
-        if(session == null || preserveDefaultBehaviour) return;
-        refreshPage();
+        if(!Session.isActive() || preserveDefaultBehaviour) return;
+        Core.loadBankPage();
 
         if(isSearching){
-            BankUtils.advancePage(session.serverSession, ()->{
-                finalizeSearch();
+            BankUtils.advancePage(Session.getBacking(), ()->{
+                Core.initRimSession();
                 isSearching = false;
             });
         }
     }
 
-    /**
-     * Creates the session if it doesnt exist and reloads the data
-     */
-    private void ensureSession(AbstractContainerScreen<ChestMenu> bankScreen){
-        if(session == null){
-            McUtils.sendMessageToClient(Component.literal("Analyzing Bank...").withStyle(ChatFormatting.GRAY));
-            session = new WyRimSession();
-            session.serverSession = new BankSession(bankScreen);
-            session.clientSession = new RimSession(new WyRimScreen(McUtils.player(), session));
-            if(itemCache != null){
-                session.serverSession.allItems.addAll(itemCache);
-                finalizeSearch();
-            }
-            else{
-                isSearching = true;
-            }
-        }
-        session.serverSession.bankScreen = bankScreen;
-        refreshPage();
-    }
-
-    private void finalizeSearch(){
-        itemCache = new ArrayList<>();
-        itemCache.addAll(session.serverSession.allItems);
-        session.clientSession.rimScreen.getMenu().items.clear();
-        session.clientSession.rimScreen.getMenu().items.addAll(session.serverSession.allItems.stream().map(x->x.item).toList());
-        session.clientSession.rimScreen.getMenu().refresh();
-        ScreenUtils.activateWithoutDestroy(session.clientSession.rimScreen);
-    }
-
-    private void refreshPage(){
-        var items = BankUtils.mapItems(session.serverSession);
-        session.serverSession.allItems.removeIf(x->items.stream().anyMatch(y->x.bankSlotId == y.bankSlotId));
-        session.serverSession.allItems.addAll(items);
-    }
-
     @SubscribeEvent(priority = EventPriority.HIGHEST)
     public void onScreenClose(ScreenClosedEvent e) {
-        session = null;
         preserveDefaultBehaviour = false;
-//        if (!(e.getScreen() instanceof AbstractContainerScreen<?> screen)) return;
-//
-//        if(Models.Container.isBankScreen(screen)){
-//            displayRim();
-//        }
+        Core.destroySession();
     }
 }
