@@ -25,9 +25,11 @@ public class WyRimCoreService extends Service {
      */
     protected void predicatesUpdated(){
         Session.getFront().items.clear();
+//        System.out.println(Session.getBacking().items);
         Session.getFront().items.addAll(
                 Search.applyPredicates(Session.getBacking().items)
         );
+        Session.getFront().rimScreen.getMenu().refresh();
     }
 
     /**
@@ -53,7 +55,6 @@ public class WyRimCoreService extends Service {
         Cache.setCachedItems(Session.getBacking().items);
         var screen = Session.getFront().rimScreen;
         predicatesUpdated(); // update with empty predicates
-        screen.getMenu().refresh();
         ScreenUtils.activateWithoutDestroy(screen);
     }
 

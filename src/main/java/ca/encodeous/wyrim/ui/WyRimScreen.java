@@ -29,10 +29,10 @@ public class WyRimScreen extends AbstractContainerScreen<WyRimMenu> {
     private static final int scrollBarOffsetY = 18;
     private static final int scrollBarHeight = 112;
     private static final int scrollBarWidth = 14;
-    private static final int searchBarOffsetX = 80;
+    private static final int searchBarOffsetX = 68;
     private static final int searchBarOffsetY = 5;
     private static final int searchBarHeight = 9;
-    private static final int searchBarWidth = 88;
+    private static final int searchBarWidth = 100;
 
     public WyRimScreen(Player player) {
         super(new WyRimMenu(player), player.getInventory(), Component.literal("Your Bank"));
@@ -89,15 +89,8 @@ public class WyRimScreen extends AbstractContainerScreen<WyRimMenu> {
         this.menu.items.clear();
 
         String string = this.searchBox.getValue();
-        var predicates = new ArrayList<ItemPredicate>();
-        if (!string.isEmpty()) {
-            var conditions = string.split("[|]");
-            for(var condition : conditions){
-                predicates.add(ItemPredicate.buildMatchText(condition.trim()));
-            }
-        }
 
-        WyRimServices.Search.setPredicates(predicates);
+        WyRimServices.Search.setPredicate(ItemPredicate.buildMatchQuery(string));
 
         this.scrollOffs = 0.0F;
         this.menu.scrollTo(0.0F);
