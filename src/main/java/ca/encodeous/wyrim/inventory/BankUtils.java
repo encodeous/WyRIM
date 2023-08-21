@@ -1,6 +1,6 @@
 package ca.encodeous.wyrim.inventory;
 
-import ca.encodeous.wyrim.models.item.RimMappedItem;
+import ca.encodeous.wyrim.models.graph.RimItemPointer;
 import ca.encodeous.wyrim.models.ui.server.BankSession;
 import com.wynntils.core.components.Models;
 import com.wynntils.core.text.StyledText;
@@ -15,9 +15,9 @@ import java.util.ArrayList;
 import java.util.Optional;
 
 public class BankUtils {
-    public static ArrayList<RimMappedItem> mapItems(BankSession session){
+    public static ArrayList<RimItemPointer> mapItems(BankSession session){
         Container container = session.bankScreen.getMenu().getContainer();
-        ArrayList<RimMappedItem> items = new ArrayList<>();
+        ArrayList<RimItemPointer> items = new ArrayList<>();
         for (int i = 0; i < container.getContainerSize(); i++) {
             if (!SearchableContainerType.BANK.getBounds().getSlots().contains(i)) continue;
 
@@ -28,7 +28,7 @@ public class BankUtils {
 
             int page = Models.Container.getCurrentBankPage(session.bankScreen);
 
-            items.add(new RimMappedItem(i + page * container.getContainerSize(), itemStack));
+            items.add(new RimItemPointer(i + page * container.getContainerSize(), itemStack, RimItemPointer.ItemSource.BANK));
         }
         return items;
     }

@@ -1,11 +1,13 @@
 package ca.encodeous.wyrim.models.item;
 
+import ca.encodeous.wyrim.models.graph.ItemSnapshot;
+import ca.encodeous.wyrim.models.graph.RimItemPointer;
 import com.wynntils.core.components.Models;
 import net.minecraft.world.item.TooltipFlag;
 
 @FunctionalInterface
 public interface ItemPredicate {
-    boolean satisfies(RimMappedItem item);
+    boolean satisfies(ItemSnapshot item);
     default ItemPredicate and(ItemPredicate other){
         return (item) -> satisfies(item) && other.satisfies(item);
     }

@@ -1,8 +1,10 @@
 package ca.encodeous.wyrim.services;
 
 import ca.encodeous.wyrim.RimServices;
+import ca.encodeous.wyrim.models.graph.ItemSnapshot;
 import ca.encodeous.wyrim.models.item.ItemPredicate;
-import ca.encodeous.wyrim.models.item.RimMappedItem;
+import ca.encodeous.wyrim.models.graph.RimItemPointer;
+import ca.encodeous.wyrim.models.ui.SortMode;
 import com.wynntils.core.components.Service;
 
 import java.util.ArrayList;
@@ -20,13 +22,14 @@ public class SearchService extends Service {
         RimServices.Core.predicatesUpdated();
     }
 
-    protected ArrayList<RimMappedItem> applyPredicates(Collection<RimMappedItem> items){
-        var list = new ArrayList<RimMappedItem>();
+    protected ArrayList<ItemSnapshot> applyPredicates(Collection<ItemSnapshot> items){
+        var list = new ArrayList<ItemSnapshot>();
         for(var item : items) {
             if(predicate.satisfies(item)){
                 list.add(item);
             }
         }
+        list.sort(SortMode.DEFAULT_MODE.getComparator());
         return list;
     }
 }
