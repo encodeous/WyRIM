@@ -2,6 +2,7 @@ package ca.encodeous.wyrim.ui;
 
 import ca.encodeous.wyrim.RimServices;
 import ca.encodeous.wyrim.models.item.ItemPredicate;
+import ca.encodeous.wyrim.services.ItemStorageService;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.gui.ComponentPath;
@@ -17,12 +18,15 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Optional;
 
+import static ca.encodeous.wyrim.RimServices.Storage;
+import static ca.encodeous.wyrim.services.ItemStorageService.CONTAINER_ROWS;
+
 public class RimScreen extends AbstractContainerScreen<RimMenu> {
     private static final ResourceLocation SCROLL_BAR_BUTTON = new ResourceLocation("textures/gui/container/creative_inventory/tabs.png");
     private static final ResourceLocation SCROLL_BAR = new ResourceLocation("textures/gui/container/creative_inventory/tab_item_search.png");
     private static final ResourceLocation CONTAINER_BACKGROUND = new ResourceLocation("textures/gui/container/generic_54.png");
     private EditBox searchBox;
-    private float scrollOffs;
+    public float scrollOffs;
     private boolean scrolling;
     private static final int scrollBarOffsetX = 170;
     private static final int scrollBarOffsetY = 18;
@@ -36,7 +40,7 @@ public class RimScreen extends AbstractContainerScreen<RimMenu> {
     public RimScreen(Player player) {
         super(new RimMenu(player), player.getInventory(), Component.literal("Your Bank"));
 
-        this.imageHeight = 114 + RimMenu.CONTAINER_ROWS * 18;
+        this.imageHeight = 114 + CONTAINER_ROWS * 18;
         this.inventoryLabelY = this.imageHeight - 94;
     }
 
@@ -62,9 +66,9 @@ public class RimScreen extends AbstractContainerScreen<RimMenu> {
         int m = y + 112;
 
         // draw container
-        blit(poseStack, x, y, 0, 0, this.imageWidth, RimMenu.CONTAINER_ROWS * 18 + 17);
+        blit(poseStack, x, y, 0, 0, this.imageWidth, CONTAINER_ROWS * 18 + 17);
         // draw player inventory
-        blit(poseStack, x, y + RimMenu.CONTAINER_ROWS * 18 + 17, 0, 126, this.imageWidth, 96);
+        blit(poseStack, x, y + CONTAINER_ROWS * 18 + 17, 0, 126, this.imageWidth, 96);
 
         this.searchBox.render(poseStack, mouseY, delta, mouseX);
 
@@ -85,11 +89,9 @@ public class RimScreen extends AbstractContainerScreen<RimMenu> {
     }
 
     private void refreshSearchResults() {
-        this.menu.items.clear();
-
         String string = this.searchBox.getValue();
 
-        RimServices.Search.setPredicate(ItemPredicate.buildMatchQuery(string));
+        RimServices.Search.setPredicate(string);
 
         this.scrollOffs = 0.0F;
         this.menu.scrollTo(0.0F);

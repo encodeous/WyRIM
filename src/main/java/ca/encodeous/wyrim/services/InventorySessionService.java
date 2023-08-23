@@ -1,8 +1,10 @@
 package ca.encodeous.wyrim.services;
 
-import ca.encodeous.wyrim.models.ui.client.RimSession;
-import ca.encodeous.wyrim.models.ui.server.BankSession;
+import ca.encodeous.wyrim.ui.RimScreen;
 import com.wynntils.core.components.Service;
+import com.wynntils.utils.mc.McUtils;
+import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
+import net.minecraft.world.inventory.ChestMenu;
 
 import java.util.List;
 
@@ -16,28 +18,29 @@ public class InventorySessionService extends Service {
     }
 
     public void endSession(){
+        rimScreen.removed();
         active = false;
     }
 
-    public BankSession getBacking() {
-        return backing;
+    public AbstractContainerScreen<ChestMenu> bankScreen;
+    public RimScreen rimScreen;
+
+    public AbstractContainerScreen<ChestMenu> getBacking() {
+        return bankScreen;
     }
 
-    public void setBacking(BankSession backing) {
-        this.backing = backing;
+    public void setBacking(AbstractContainerScreen<ChestMenu> backing) {
+        this.bankScreen = backing;
         active = true;
     }
 
-    public RimSession getFront() {
-        return front;
+    public RimScreen getFront() {
+        return rimScreen;
     }
 
-    public void setFront(RimSession front) {
-        this.front = front;
+    public void setFront(RimScreen front) {
+        this.rimScreen = front;
     }
-
-    private BankSession backing;
-    private RimSession front;
 
     private boolean active = false;
 }

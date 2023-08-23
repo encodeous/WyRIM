@@ -1,11 +1,14 @@
 package ca.encodeous.wyrim.models.item;
 
 import com.wynntils.core.components.Models;
+import com.wynntils.utils.mc.McUtils;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 
 @FunctionalInterface
 public interface ItemPredicate {
-    boolean satisfies(RimMappedItem item);
+    boolean satisfies(ItemStack item);
     default ItemPredicate and(ItemPredicate other){
         return (item) -> satisfies(item) && other.satisfies(item);
     }
@@ -17,22 +20,18 @@ public interface ItemPredicate {
     }
     ItemPredicate ANY = (item) -> true;
     ItemPredicate NONE = (item) -> false;
-    ItemPredicate ANY_NOT_EMPTY = (item) -> !item.item.isEmpty();
+    ItemPredicate ANY_NOT_EMPTY = (item) -> !item.isEmpty();
     static ItemPredicate buildMatchToken(String text){
         return (item) -> {
-            var x = item.item;
             var match = text.toLowerCase();
-            if (x.getDisplayName().getString().toLowerCase().contains(match)) return true;
-            if (x.getTooltipLines(null, TooltipFlag.NORMAL)
+            if (item.getDisplayName().getString().toLowerCase().contains(match)) return true;
+            if (item.getTooltipLines(null, TooltipFlag.NORMAL)
                     .stream()
                     .anyMatch(y ->
                             y.getString().toLowerCase().contains(match)
                     ))
                 return true;
-            var wynnItemOpt = Models.Item.getWynnItem(x);
-            if (wynnItemOpt.isEmpty()) return false;
-            var wynnItem = wynnItemOpt.get();
-            return wynnItem.toString().toLowerCase().contains(match);
+            return false;
         };
     }
 

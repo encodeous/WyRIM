@@ -1,7 +1,7 @@
 package ca.encodeous.wyrim.inventory;
 
+import ca.encodeous.wyrim.models.item.RimItemOrigin;
 import ca.encodeous.wyrim.models.item.RimMappedItem;
-import ca.encodeous.wyrim.models.ui.server.BankSession;
 import com.wynntils.core.components.Models;
 import com.wynntils.core.text.StyledText;
 import com.wynntils.models.containers.type.SearchableContainerType;
@@ -14,9 +14,12 @@ import org.lwjgl.glfw.GLFW;
 import java.util.ArrayList;
 import java.util.Optional;
 
+import static ca.encodeous.wyrim.RimServices.Session;
+
 public class BankUtils {
-    public static ArrayList<RimMappedItem> mapItems(BankSession session){
-        Container container = session.bankScreen.getMenu().getContainer();
+    public static ArrayList<RimMappedItem> mapItems(){
+        var screen = Session.getBacking();
+        Container container = screen.getMenu().getContainer();
         ArrayList<RimMappedItem> items = new ArrayList<>();
         for (int i = 0; i < container.getContainerSize(); i++) {
             if (!SearchableContainerType.BANK.getBounds().getSlots().contains(i)) continue;
@@ -26,20 +29,20 @@ public class BankUtils {
             Optional<WynnItem> wynnItemOpt = Models.Item.getWynnItem(itemStack);
             if (wynnItemOpt.isEmpty()) return new ArrayList<>();
 
-            int page = Models.Container.getCurrentBankPage(session.bankScreen);
+            int page = Models.Container.getCurrentBankPage(Session.bankScreen);
 
-            items.add(new RimMappedItem(i + page * container.getContainerSize(), itemStack));
+            items.add(new RimMappedItem(itemStack, i + page * container.getContainerSize()));
         }
         return items;
     }
 
     /**
      * Advances to the next page of the bank
-     * @param session
      * @return
      */
-    public static void advancePage(BankSession session, Runnable finished){
-        StyledText name = StyledText.fromComponent(session.bankScreen
+    public static void advancePage(Runnable finished){
+        var screen = Session.getBacking();
+        StyledText name = StyledText.fromComponent(screen
                 .getMenu()
                 .getItems()
                 .get(SearchableContainerType.BANK.getNextItemSlot())
@@ -52,8 +55,8 @@ public class BankUtils {
 
         ContainerUtils.clickOnSlot(
                 SearchableContainerType.BANK.getNextItemSlot(),
-                session.bankScreen.getMenu().containerId,
+                screen.getMenu().containerId,
                 GLFW.GLFW_MOUSE_BUTTON_LEFT,
-                session.bankScreen.getMenu().getItems());
+                screen.getMenu().getItems());
     }
 }

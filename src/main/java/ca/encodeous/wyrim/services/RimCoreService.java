@@ -2,8 +2,6 @@ package ca.encodeous.wyrim.services;
 
 import ca.encodeous.wyrim.inventory.BankUtils;
 import ca.encodeous.wyrim.inventory.ScreenUtils;
-import ca.encodeous.wyrim.models.ui.client.RimSession;
-import ca.encodeous.wyrim.models.ui.server.BankSession;
 import ca.encodeous.wyrim.ui.RimScreen;
 import com.wynntils.core.components.Service;
 import com.wynntils.utils.mc.McUtils;
@@ -24,12 +22,11 @@ public class RimCoreService extends Service {
      * Called when the search is updated with new predicates
      */
     protected void predicatesUpdated(){
-        Session.getFront().items.clear();
-//        System.out.println(Session.getBacking().items);
-        Session.getFront().items.addAll(
-                Search.applyPredicates(Session.getBacking().items)
+        Storage.displayedItemPool.clear();
+        Storage.displayedItemPool.addAll(
+                Search.applyPredicates(Storage.bankItemPool)
         );
-        Session.getFront().rimScreen.getMenu().refresh();
+        Session.getFront().getMenu().refresh();
     }
 
     /**
@@ -39,11 +36,11 @@ public class RimCoreService extends Service {
      */
     public boolean initBankSession(AbstractContainerScreen<ChestMenu> screen){
         McUtils.sendMessageToClient(Component.literal("Analyzing Bank...").withStyle(ChatFormatting.GRAY));
-        Session.setBacking(new BankSession(screen));
-        Session.setFront(new RimSession());
-        Session.getFront().setRimScreen(new RimScreen(McUtils.player()));
+        Storage.initSession();
+        Session.setBacking(screen);
+        Session.setFront(new RimScreen(McUtils.player()));
         if(Cache.hasCache()){
-            Session.getBacking().items.addAll(Cache.getCachedItems());
+            Storage.bankItemPool.addAll(Cache.getCachedItems());
             initRimSession();
             return false;
         }
@@ -52,25 +49,29 @@ public class RimCoreService extends Service {
 
     public void initRimSession(){
         Cache.clearCache();
-        Cache.setCachedItems(Session.getBacking().items);
-        var screen = Session.getFront().rimScreen;
+        var screen = Session.getFront();
         predicatesUpdated(); // update with empty predicates
         ScreenUtils.activateWithoutDestroy(screen);
     }
 
     public void loadBankPage(){
-        var newItems = BankUtils.mapItems(Session.getBacking());
-        var backingStore = Session.getBacking().items;
-        // remove duplicates if the sends the packets more than once
-        backingStore.removeIf(x->newItems.stream().anyMatch(y->x.bankSlotId == y.bankSlotId));
-        backingStore.addAll(newItems);
+        var newItems = BankUtils.mapItems();
+        // remove duplicates if the server sends the packets more than once
+        Storage.bankItemPool.removeIf(x -> newItems.stream().anyMatch(y->y.originSlot == x.originSlot));
+        Storage.bankItemPool.addAll(newItems);
     }
 
     public void destroySession(){
-        Session.endSession();
+        if(Session.isActive()){
+            Session.endSession();
+            Cache.setCachedItems(Storage.bankItemPool);
+            Search.destroy();
+            Storage.destroy();
+        }
     }
 
     public void clearBankCache(){
         Cache.clearCache();
     }
+
 }

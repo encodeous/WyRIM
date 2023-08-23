@@ -1,6 +1,7 @@
 package ca.encodeous.wyrim.features;
 
 import ca.encodeous.wyrim.inventory.BankUtils;
+import ca.encodeous.wyrim.inventory.ScreenUtils;
 import com.wynntils.core.components.Models;
 import com.wynntils.core.consumers.features.Feature;
 import com.wynntils.mc.event.ContainerSetContentEvent;
@@ -33,8 +34,9 @@ public class RefinedItemManagerFeature extends Feature {
                     }
                 }
                 else{
-                    Session.getBacking().bankScreen = (AbstractContainerScreen<ChestMenu>) screen;
-                    Core.loadBankPage();
+                    Session.setBacking((AbstractContainerScreen<ChestMenu>) screen);
+//                    ScreenUtils.activateWithoutDestroy(screen);
+//                    Core.loadBankPage();
                 }
             }
         }
@@ -43,10 +45,10 @@ public class RefinedItemManagerFeature extends Feature {
     @SubscribeEvent
     public void onContainerSetContent(ContainerSetContentEvent.Post event) {
         if(!Session.isActive() || preserveDefaultBehaviour) return;
-        Core.loadBankPage();
 
         if(isSearching){
-            BankUtils.advancePage(Session.getBacking(), ()->{
+            Core.loadBankPage();
+            BankUtils.advancePage(()->{
                 Core.initRimSession();
                 isSearching = false;
             });
