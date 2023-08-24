@@ -4,7 +4,18 @@ import ca.encodeous.wyrim.inventory.InvUtils;
 import ca.encodeous.wyrim.models.item.RimMappedItem;
 import ca.encodeous.wyrim.models.ui.RimSlot;
 import com.google.common.collect.Sets;
+import com.wynntils.core.components.Handlers;
+import com.wynntils.core.components.Managers;
+import com.wynntils.core.components.Models;
+import com.wynntils.handlers.item.ItemHandler;
+import com.wynntils.models.containers.type.SearchableContainerType;
+import com.wynntils.models.items.WynnItem;
+import com.wynntils.models.items.items.gui.GuiItem;
+import com.wynntils.models.items.items.gui.SoulPointItem;
 import com.wynntils.utils.mc.McUtils;
+import com.wynntils.utils.wynn.ContainerUtils;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
@@ -13,12 +24,13 @@ import net.minecraft.world.inventory.ClickAction;
 import net.minecraft.world.inventory.ClickType;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
+import org.lwjgl.glfw.GLFW;
 
-import java.util.Iterator;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
+import java.util.concurrent.CompletableFuture;
 
 import static ca.encodeous.wyrim.RimServices.*;
+import static ca.encodeous.wyrim.inventory.InvUtils.guiClick;
 import static ca.encodeous.wyrim.services.ItemStorageService.CONTAINER_ROWS;
 
 public class RimMenu extends AbstractContainerMenu {
@@ -50,6 +62,7 @@ public class RimMenu extends AbstractContainerMenu {
             Storage.invItemPool.add(new RimMappedItem(inventory.getItem(l), l));
             addSlot(new Slot(inventory, l, 8 + l * 18, 161 + k));
         }
+        Collections.reverse(Storage.invItemPool);
         scrollTo(0.0F);
     }
 
@@ -95,7 +108,9 @@ public class RimMenu extends AbstractContainerMenu {
 
     @Override
     public ItemStack quickMoveStack(Player player, int id) {
-        var item = InvUtils.getItemUniversal(id);
+        var optItem = InvUtils.getItemUniversal(id);
+        if(optItem.isEmpty()) return ItemStack.EMPTY;
+        var item = optItem.get();
         var originalItem = item.item;
         if(!InvUtils.isBank(id)){
             // deposit into bank
@@ -119,13 +134,74 @@ public class RimMenu extends AbstractContainerMenu {
 
     @Override
     public void clicked(final int id, final int dragType, final ClickType clickType, final Player player) {
-        if(id < 0 && (clickType == ClickType.PICKUP || clickType == ClickType.QUICK_MOVE)) return;
-        var isCarried = !getCarried().isEmpty();
+//        if(id == 83){
+//            // experiment
+//            var src = 81;
+//            var optItem = InvUtils.getItemUniversal(81).get().item;
+//            var optItem2 = InvUtils.getItemUniversal(82).get().item;
+//            var optItem3 = InvUtils.getItemUniversal(83).get().item;
+//
+//
+////            guiClick(81, GLFW.GLFW_MOUSE_BUTTON_LEFT);
+////            var pCompose = InvUtils.waitForCarryUpdate(1);
+////
+////            for(int i = 0; i < 20; i++){
+////                pCompose = pCompose.thenCompose((x)->{
+////                    guiClick(82, GLFW.GLFW_MOUSE_BUTTON_RIGHT);
+////                    return InvUtils.waitForCarryUpdate(2);
+////                });
+////            }
+////
+////            pCompose = pCompose.thenCompose((x)->{
+////                guiClick(81, GLFW.GLFW_MOUSE_BUTTON_LEFT);
+////                return CompletableFuture.completedFuture(null);
+////            });
+//
+//            InvUtils.transfer(81, 82, optItem3.count)
+//                    .thenRun(()->{
+//                        setCarried(ItemStack.EMPTY);
+//                        super.clicked(id, dragType, clickType, player);
+//                        Storage.scanInventoriesForChanges();
+//                    });
+//
+////            CompletableFuture<Boolean> cComp = InvUtils.transfer(81, 82, 64)
+////                    .thenCompose((x)->{
+////                        return CompletableFuture.completedFuture(true);
+////                    });
+////
+////            for(int i = 0; i < 32; i++) {
+////                int finalI = i;
+////                cComp = cComp.thenCompose((x) -> {
+////                            var completion = new CompletableFuture<Boolean>();
+////                            Managers.TickScheduler.scheduleLater(() -> {
+////                                if (finalI % 2 == 0) {
+////                                    InvUtils.transfer(82, 81, 64 - finalI)
+////                                            .thenRun(() -> {
+////                                                completion.complete(true);
+////                                            });
+////                                    completion.complete(true);
+////                                } else {
+////                                    InvUtils.transfer(81, 82, 64 - finalI)
+////                                            .thenRun(() -> {
+////                                                completion.complete(true);
+////                                            });
+////                                }
+////
+////                            }, 2);
+////                            return completion;
+////
+////                        }
+////
+////                );
+////            }
+//            return;
+//        }
+        if(id < 0 && (clickType == ClickType.PICKUP || clickType == ClickType.QUICK_MOVE || Screen.hasShiftDown())) return;
+        var optItem = InvUtils.getItemUniversal(id);
+        if(optItem.isPresent()){
+            if(InvUtils.isRestrictedItem(optItem.get().item)) return;
+        }
         super.clicked(id, dragType, clickType, player);
         Storage.scanInventoriesForChanges();
-//        if(InvUtils.isBank(id) && Search.isPredicateApplied() && isCarried){
-//            // find most optimal position
-//            setCarried(Storage.depositItemStack(getCarried()));
-//        }
     }
 }

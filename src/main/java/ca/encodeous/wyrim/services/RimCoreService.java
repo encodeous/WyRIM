@@ -1,5 +1,6 @@
 package ca.encodeous.wyrim.services;
 
+import ca.encodeous.wyrim.engine.DiffEngine;
 import ca.encodeous.wyrim.inventory.BankUtils;
 import ca.encodeous.wyrim.inventory.ScreenUtils;
 import ca.encodeous.wyrim.ui.RimScreen;
@@ -17,6 +18,8 @@ public class RimCoreService extends Service {
     public RimCoreService() {
         super(List.of());
     }
+    public DiffEngine diff;
+    public static boolean isInjectionMode = false;
 
     /**
      * Called when the search is updated with new predicates
@@ -51,6 +54,7 @@ public class RimCoreService extends Service {
         Cache.clearCache();
         var screen = Session.getFront();
         predicatesUpdated(); // update with empty predicates
+        diff = new DiffEngine();
         ScreenUtils.activateWithoutDestroy(screen);
     }
 

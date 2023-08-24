@@ -8,8 +8,10 @@ import net.minecraft.world.item.ItemStack;
 import static ca.encodeous.wyrim.RimServices.Search;
 
 public class RimSlot extends Slot {
+    private int slot;
     public RimSlot(Container container, int i, int j, int k) {
         super(container, i, j, k);
+        slot = i;
     }
 
     @Override

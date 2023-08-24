@@ -36,11 +36,13 @@ public class BankUtils {
         return items;
     }
 
+    public static int maxBankPage = 0;
+
     /**
      * Advances to the next page of the bank
      * @return
      */
-    public static void advancePage(Runnable finished){
+    public static void advancePage(Runnable finished, int curPage){
         var screen = Session.getBacking();
         StyledText name = StyledText.fromComponent(screen
                 .getMenu()
@@ -52,6 +54,8 @@ public class BankUtils {
             finished.run();
             return;
         }
+
+        maxBankPage = Math.max(curPage, maxBankPage);
 
         ContainerUtils.clickOnSlot(
                 SearchableContainerType.BANK.getNextItemSlot(),
