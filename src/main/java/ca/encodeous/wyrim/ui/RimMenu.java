@@ -1,5 +1,6 @@
 package ca.encodeous.wyrim.ui;
 
+import ca.encodeous.wyrim.engine.DiffEngine;
 import ca.encodeous.wyrim.inventory.InvUtils;
 import ca.encodeous.wyrim.models.item.RimMappedItem;
 import ca.encodeous.wyrim.models.ui.RimSlot;
@@ -134,68 +135,65 @@ public class RimMenu extends AbstractContainerMenu {
 
     @Override
     public void clicked(final int id, final int dragType, final ClickType clickType, final Player player) {
-//        if(id == 83){
-//            // experiment
-//            var src = 81;
-//            var optItem = InvUtils.getItemUniversal(81).get().item;
-//            var optItem2 = InvUtils.getItemUniversal(82).get().item;
-//            var optItem3 = InvUtils.getItemUniversal(83).get().item;
+        if(id == 83){
+            Core.diff.applySnapshot();
+            // experiment
+
+
+//            guiClick(81, GLFW.GLFW_MOUSE_BUTTON_LEFT);
+//            var pCompose = InvUtils.waitForCarryUpdate(1);
 //
+//            for(int i = 0; i < 20; i++){
+//                pCompose = pCompose.thenCompose((x)->{
+//                    guiClick(82, GLFW.GLFW_MOUSE_BUTTON_RIGHT);
+//                    return InvUtils.waitForCarryUpdate(2);
+//                });
+//            }
 //
-////            guiClick(81, GLFW.GLFW_MOUSE_BUTTON_LEFT);
-////            var pCompose = InvUtils.waitForCarryUpdate(1);
-////
-////            for(int i = 0; i < 20; i++){
-////                pCompose = pCompose.thenCompose((x)->{
-////                    guiClick(82, GLFW.GLFW_MOUSE_BUTTON_RIGHT);
-////                    return InvUtils.waitForCarryUpdate(2);
-////                });
-////            }
-////
-////            pCompose = pCompose.thenCompose((x)->{
-////                guiClick(81, GLFW.GLFW_MOUSE_BUTTON_LEFT);
-////                return CompletableFuture.completedFuture(null);
-////            });
-//
+//            pCompose = pCompose.thenCompose((x)->{
+//                guiClick(81, GLFW.GLFW_MOUSE_BUTTON_LEFT);
+//                return CompletableFuture.completedFuture(null);
+//            });
+
 //            InvUtils.transfer(81, 82, optItem3.count)
 //                    .thenRun(()->{
 //                        setCarried(ItemStack.EMPTY);
 //                        super.clicked(id, dragType, clickType, player);
 //                        Storage.scanInventoriesForChanges();
 //                    });
+
+//            CompletableFuture<Boolean> cComp = InvUtils.transfer(81, 82, 64)
+//                    .thenCompose((x)->{
+//                        return CompletableFuture.completedFuture(true);
+//                    });
 //
-////            CompletableFuture<Boolean> cComp = InvUtils.transfer(81, 82, 64)
-////                    .thenCompose((x)->{
-////                        return CompletableFuture.completedFuture(true);
-////                    });
-////
-////            for(int i = 0; i < 32; i++) {
-////                int finalI = i;
-////                cComp = cComp.thenCompose((x) -> {
-////                            var completion = new CompletableFuture<Boolean>();
-////                            Managers.TickScheduler.scheduleLater(() -> {
-////                                if (finalI % 2 == 0) {
-////                                    InvUtils.transfer(82, 81, 64 - finalI)
-////                                            .thenRun(() -> {
-////                                                completion.complete(true);
-////                                            });
-////                                    completion.complete(true);
-////                                } else {
-////                                    InvUtils.transfer(81, 82, 64 - finalI)
-////                                            .thenRun(() -> {
-////                                                completion.complete(true);
-////                                            });
-////                                }
-////
-////                            }, 2);
-////                            return completion;
-////
-////                        }
-////
-////                );
-////            }
-//            return;
-//        }
+//            for(int i = 0; i < 32; i++) {
+//                int finalI = i;
+//                cComp = cComp.thenCompose((x) -> {
+//                            var completion = new CompletableFuture<Boolean>();
+//                            Managers.TickScheduler.scheduleLater(() -> {
+//                                if (finalI % 2 == 0) {
+//                                    InvUtils.transfer(82, 81, 64 - finalI)
+//                                            .thenRun(() -> {
+//                                                completion.complete(true);
+//                                            });
+//                                    completion.complete(true);
+//                                } else {
+//                                    InvUtils.transfer(81, 82, 64 - finalI)
+//                                            .thenRun(() -> {
+//                                                completion.complete(true);
+//                                            });
+//                                }
+//
+//                            }, 2);
+//                            return completion;
+//
+//                        }
+//
+//                );
+//            }
+            return;
+        }
         if(id < 0 && (clickType == ClickType.PICKUP || clickType == ClickType.QUICK_MOVE || Screen.hasShiftDown())) return;
         var optItem = InvUtils.getItemUniversal(id);
         if(optItem.isPresent()){

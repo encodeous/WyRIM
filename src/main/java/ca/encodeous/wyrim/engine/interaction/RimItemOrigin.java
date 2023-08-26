@@ -1,4 +1,4 @@
-package ca.encodeous.wyrim.models.item;
+package ca.encodeous.wyrim.engine.interaction;
 
 import java.util.Objects;
 

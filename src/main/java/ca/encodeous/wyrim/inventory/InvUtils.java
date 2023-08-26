@@ -1,6 +1,7 @@
 package ca.encodeous.wyrim.inventory;
 
 import ca.encodeous.wyrim.engine.RetryState;
+import ca.encodeous.wyrim.engine.interaction.RimItemOrigin;
 import ca.encodeous.wyrim.models.item.RimMappedItem;
 import ca.encodeous.wyrim.services.RimCoreService;
 import com.wynntils.core.components.Handlers;
@@ -32,6 +33,7 @@ import static ca.encodeous.wyrim.RimServices.Storage;
 
 public class InvUtils {
     public static ArrayList<CompletableFuture<ItemStack>> itemSlotCallbacks = new ArrayList<>();
+    public static ArrayList<CompletableFuture<Void>> pageLoadCallbacks = new ArrayList<>();
     public static CompletableFuture<ItemStack> waitForCarryUpdate(int expectedUpdates){
 //        return CompletableFuture.supplyAsync(() -> {
 //            try {
@@ -53,6 +55,20 @@ public class InvUtils {
             );
         }
     }
+
+    public static CompletableFuture<Void> waitForPageLoad(int expectedUpdates){
+        if(expectedUpdates == 0) return CompletableFuture.completedFuture(null);
+        if(expectedUpdates == 1){
+            var comp = new CompletableFuture<Void>();
+            pageLoadCallbacks.add(comp);
+            return comp;
+        }
+        else{
+            return waitForPageLoad(expectedUpdates - 1).thenCompose(x ->
+                    waitForPageLoad(1)
+            );
+        }
+    }
     public static int mapUiToSlotId(int id){
         if(id <= 53){
             return id;
@@ -67,8 +83,48 @@ public class InvUtils {
         return id;
     }
 
+    public static int mapSlotToUiId(int id){
+        if(id <= 28){
+            id = id + 28;
+        }else{
+            id -= 8;
+        }
+        id += 53;
+        return id;
+    }
+
     public static boolean isBank(int id){
         return id <= 53;
+    }
+
+    public static boolean isBank(RimItemOrigin origin){
+        return origin.backingSource == RimItemOrigin.ItemSource.BANK;
+    }
+
+    public static int getBankPage(RimItemOrigin origin){
+        // items.add(new RimMappedItem(itemStack, i + page * container.getContainerSize()));
+        var contSize = Session.getBacking().getMenu().getContainer().getContainerSize();
+        return origin.slotId / contSize;
+    }
+
+    public static int getBankSlotId(RimItemOrigin origin){
+        // items.add(new RimMappedItem(itemStack, i + page * container.getContainerSize()));
+        var contSize = Session.getBacking().getMenu().getContainer().getContainerSize();
+        return origin.slotId % contSize;
+    }
+
+    public static int getBankSlotId(int mappedId){
+        // items.add(new RimMappedItem(itemStack, i + page * container.getContainerSize()));
+        var contSize = Session.getBacking().getMenu().getContainer().getContainerSize();
+        return mappedId % contSize;
+    }
+
+    public static int mapToAppropriateId(RimItemOrigin origin){
+        if(origin.backingSource == RimItemOrigin.ItemSource.BANK){
+            return getBankSlotId(origin.slotId);
+        }else{
+            return mapSlotToUiId(origin.slotId);
+        }
     }
 
     public static Optional<RimMappedItem> getItemUniversal(int id){
@@ -87,6 +143,15 @@ public class InvUtils {
             id = mapUiToSlotId(id);
             int finalId = id;
             return Storage.invItemPool.stream().filter(x -> x.originSlot == finalId).findFirst();
+        }
+    }
+
+    public static ItemStack getItemBacking(int id){
+        if(isBank(id)){
+            return Storage.bank.getItem(id);
+        }else{
+            id = mapUiToSlotId(id);
+            return McUtils.player().getInventory().getItem(id);
         }
     }
 
@@ -144,8 +209,8 @@ public class InvUtils {
         RimCoreService.isInjectionMode = false;
     }
 
-    public static CompletableFuture<Boolean> transfer(int idSrc, int idDst, int amount){
-        return transfer(InvUtils.getItemUniversal(idSrc).get().item, InvUtils.getItemUniversal(idDst).get().item, idSrc, idDst, amount)
+    public static CompletableFuture<Boolean> transfer(int idSrc, int idDst, int amount, ItemStack src, ItemStack dst){
+        return transfer(src, dst, idSrc, idDst, amount)
                 .thenCompose(x->{
                     if(!x){
                         return interact(idDst, GLFW.GLFW_MOUSE_BUTTON_LEFT, ItemStack.EMPTY, 0)

@@ -53,7 +53,6 @@ public class RefinedItemManagerFeature extends Feature {
         }
     }
 
-    private ItemStack prevItemStack;
     @SubscribeEvent(priority = EventPriority.LOWEST)
     public void onSlotUpdate(ContainerSetSlotEvent.Post e){
         if(e.getSlot() == -1){
@@ -68,7 +67,6 @@ public class RefinedItemManagerFeature extends Feature {
             for(var comp : snap){
                 comp.complete(e.getItemStack());
             }
-            prevItemStack = e.getItemStack();
             snap.clear();
         }
     }
@@ -76,6 +74,15 @@ public class RefinedItemManagerFeature extends Feature {
     @SubscribeEvent
     public void onContainerSetContent(ContainerSetContentEvent.Post event) {
         if(!Session.isActive() || preserveDefaultBehaviour) return;
+
+        McUtils.sendMessageToClient(Component.literal("pg-load"));
+
+        var snapAny = new ArrayList<>(InvUtils.pageLoadCallbacks);
+        InvUtils.pageLoadCallbacks.clear();
+        for(var comp : snapAny){
+            comp.complete(null);
+        }
+        snapAny.clear();
 
         if(isSearching){
             Core.loadBankPage();
@@ -91,5 +98,7 @@ public class RefinedItemManagerFeature extends Feature {
     public void onScreenClose(ScreenClosedEvent e) {
         preserveDefaultBehaviour = false;
         Core.destroySession();
+        isSearching = false;
+        curBankPage = 0;
     }
 }

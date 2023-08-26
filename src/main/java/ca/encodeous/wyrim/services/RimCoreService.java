@@ -55,6 +55,7 @@ public class RimCoreService extends Service {
         var screen = Session.getFront();
         predicatesUpdated(); // update with empty predicates
         diff = new DiffEngine();
+        diff.initDiffApplicationEngine();
         ScreenUtils.activateWithoutDestroy(screen);
     }
 

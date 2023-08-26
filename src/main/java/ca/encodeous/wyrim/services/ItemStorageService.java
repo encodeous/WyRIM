@@ -68,6 +68,17 @@ public class ItemStorageService extends Service {
         }
         return -1;
     }
+
+    public int findFreeInvSlot(){
+        var pool = Storage.invItemPool;
+        for(int i = 0; i < pool.size(); i++){
+            var slot = pool.get(i);
+            var slotItem = McUtils.player().getInventory().getItem(slot.originSlot);
+            if(slotItem.isEmpty()) return slot.originSlot;
+        }
+        return -1;
+    }
+
     public ItemStack depositItemStack(ItemStack item, ArrayList<RimMappedItem> pool){
 //        item = InvUtils.copyItemStack(item);
         int slot;
