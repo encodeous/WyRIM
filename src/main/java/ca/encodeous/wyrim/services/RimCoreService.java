@@ -42,6 +42,8 @@ public class RimCoreService extends Service {
         Storage.initSession();
         Session.setBacking(screen);
         Session.setFront(new RimScreen(McUtils.player()));
+        var nScreen = Session.getFront();
+//        ScreenUtils.activateWithoutDestroy(nScreen);
         if(Cache.hasCache()){
             Storage.bankItemPool.addAll(Cache.getCachedItems());
             initRimSession();
@@ -52,11 +54,9 @@ public class RimCoreService extends Service {
 
     public void initRimSession(){
         Cache.clearCache();
-        var screen = Session.getFront();
         predicatesUpdated(); // update with empty predicates
         diff = new DiffEngine();
         diff.initDiffApplicationEngine();
-        ScreenUtils.activateWithoutDestroy(screen);
     }
 
     public void loadBankPage(){
@@ -64,14 +64,15 @@ public class RimCoreService extends Service {
         // remove duplicates if the server sends the packets more than once
         Storage.bankItemPool.removeIf(x -> newItems.stream().anyMatch(y->y.originSlot == x.originSlot));
         Storage.bankItemPool.addAll(newItems);
+        predicatesUpdated();
     }
 
     public void destroySession(){
         if(Session.isActive()){
-            Session.endSession();
             Cache.setCachedItems(Storage.bankItemPool);
             Search.destroy();
             Storage.destroy();
+            Session.endSession();
         }
     }
 

@@ -197,7 +197,7 @@ public class RimMenu extends AbstractContainerMenu {
         if(id < 0 && (clickType == ClickType.PICKUP || clickType == ClickType.QUICK_MOVE || Screen.hasShiftDown())) return;
         var optItem = InvUtils.getItemUniversal(id);
         if(optItem.isPresent()){
-            if(InvUtils.isRestrictedItem(optItem.get().item)) return;
+            if(InvUtils.isRestrictedItem(optItem.get().item, id)) return;
         }
         super.clicked(id, dragType, clickType, player);
         Storage.scanInventoriesForChanges();

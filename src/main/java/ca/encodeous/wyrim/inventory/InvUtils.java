@@ -23,6 +23,8 @@ import org.lwjgl.glfw.GLFW;
 
 import java.sql.Struct;
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
@@ -34,6 +36,7 @@ import static ca.encodeous.wyrim.RimServices.Storage;
 public class InvUtils {
     public static ArrayList<CompletableFuture<ItemStack>> itemSlotCallbacks = new ArrayList<>();
     public static ArrayList<CompletableFuture<Void>> pageLoadCallbacks = new ArrayList<>();
+    private static HashSet<Integer> restrictedSlots = new HashSet<>(List.of(87, 88, 89, 54, 55, 56, 57, 58));
     public static CompletableFuture<ItemStack> waitForCarryUpdate(int expectedUpdates){
 //        return CompletableFuture.supplyAsync(() -> {
 //            try {
@@ -84,12 +87,14 @@ public class InvUtils {
     }
 
     public static int mapSlotToUiId(int id){
-        if(id <= 28){
+        var oid = id;
+        if(id <= 8){
             id = id + 28;
         }else{
             id -= 8;
         }
         id += 53;
+        assert oid == mapUiToSlotId(id);
         return id;
     }
 
@@ -175,12 +180,14 @@ public class InvUtils {
         return Optional.of(annotation);
     }
 
-    public static boolean isRestrictedItem(ItemStack item){
+    public static boolean isRestrictedItem(ItemStack item, int slotId){
         if(item.isEmpty()) return false;
         var annotation = InvUtils.getWynnAnnotation(item);
         // block fallback annotator
-        return annotation.isEmpty() || annotation.get().getClass() == WynnItem.class || annotation.get() instanceof GuiItem;
+        return (annotation.isEmpty() || annotation.get().getClass() == WynnItem.class || annotation.get() instanceof GuiItem) && restrictedSlots.contains(slotId);
     }
+
+
 
     private static CompletableFuture<Boolean> tryEquate(int updateCnt, ItemStack expected){
         return waitForCarryUpdate(updateCnt).thenCompose(pickedUpItem ->{
@@ -202,11 +209,14 @@ public class InvUtils {
         var player = McUtils.player();
 //        RimCoreService.isInjectionMode = true;
         var menu = player.containerMenu;
+        var before = menu.getCarried();
         player.containerMenu = Session.getBacking().getMenu();
         var slot = menu.getSlot(id);
         Session.getBacking().slotClicked(slot, id, button, ClickType.PICKUP);
+        Session.getBacking().lastClickTime = 0;
         player.containerMenu = menu;
         RimCoreService.isInjectionMode = false;
+        menu.setCarried(before);
     }
 
     public static CompletableFuture<Boolean> transfer(int idSrc, int idDst, int amount, ItemStack src, ItemStack dst){

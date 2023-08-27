@@ -5,11 +5,13 @@ import ca.encodeous.wyrim.inventory.InvUtils;
 import ca.encodeous.wyrim.inventory.ScreenUtils;
 import com.wynntils.core.components.Models;
 import com.wynntils.core.consumers.features.Feature;
-import com.wynntils.mc.event.ContainerSetContentEvent;
-import com.wynntils.mc.event.ContainerSetSlotEvent;
-import com.wynntils.mc.event.ScreenClosedEvent;
-import com.wynntils.mc.event.ScreenInitEvent;
+import com.wynntils.mc.event.*;
 import com.wynntils.utils.mc.McUtils;
+import net.minecraft.client.KeyMapping;
+import net.minecraft.client.gui.screens.OptionsScreen;
+import net.minecraft.client.gui.screens.PauseScreen;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.gui.screens.VideoSettingsScreen;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.inventory.ChestMenu;
@@ -26,31 +28,76 @@ public class RefinedItemManagerFeature extends Feature {
     private boolean isSearching = false;
     private boolean preserveDefaultBehaviour = false;
 
-    private int curBankPage = 0;
-
     @SubscribeEvent(priority = EventPriority.LOWEST)
     public void onScreenInit(ScreenInitEvent e) {
         if (!(e.getScreen() instanceof AbstractContainerScreen<?> screen)) return;
         if (!(screen.getMenu() instanceof ChestMenu)) return;
 
         if(Models.Container.isBankScreen(screen)){
-            if(McUtils.player().isCrouching() || preserveDefaultBehaviour){
-                preserveDefaultBehaviour = true;
-                Core.clearBankCache();
-            }else{
-                if(!Session.isActive()){
-                    if(Core.initBankSession((AbstractContainerScreen<ChestMenu>) screen)){
-                        curBankPage = 0;
-                        isSearching = true;
-                    }
-                }
-                else{
-                    Session.setBacking((AbstractContainerScreen<ChestMenu>) screen);
-//                    ScreenUtils.activateWithoutDestroy(screen);
-//                    Core.loadBankPage();
-                }
+            handleScreen((AbstractContainerScreen<ChestMenu>) screen);
+        }
+    }
+
+    @SubscribeEvent
+    public void setScreen(ScreenOpenedEvent.Pre e) {
+        if(!Session.isActive() || preserveDefaultBehaviour) return;
+        var screen = e.getScreen();
+        if(Models.Container.isBankScreen(screen)){
+            handleScreen((AbstractContainerScreen<ChestMenu>) screen);
+            if(!preserveDefaultBehaviour){
+                e.setCanceled(true);
+                ScreenUtils.initWithoutChange(screen);
+                ScreenUtils.initWithoutChange(Session.getFront());
             }
         }
+        if(e.getScreen() instanceof PauseScreen){
+            preserveDefaultBehaviour = false;
+            Core.destroySession();
+            isSearching = false;
+        }
+    }
+
+    private void handleScreen(AbstractContainerScreen<ChestMenu> screen) {
+        if(McUtils.player().isCrouching() || preserveDefaultBehaviour){
+            preserveDefaultBehaviour = true;
+            Core.clearBankCache();
+        }else{
+            if(!Session.isActive()){
+                if(Core.initBankSession(screen)){
+                    isSearching = true;
+                }
+            }
+            else{
+                Session.setBacking(screen);
+//                handlePageUpdate();
+            }
+        }
+    }
+
+    private void handlePageUpdate() {
+        if(!Session.isActive() || preserveDefaultBehaviour) return;
+
+        McUtils.sendMessageToClient(Component.literal("pg-load"));
+
+//        ScreenUtils.activate(Session.getBacking());
+
+        var snapAny = new ArrayList<>(InvUtils.pageLoadCallbacks);
+        InvUtils.pageLoadCallbacks.clear();
+        for(var comp : snapAny){
+            comp.complete(null);
+        }
+        snapAny.clear();
+
+        if(isSearching){
+//            if(Models.Container.getCurrentBankPage(Session.bankScreen) - 1 == curBankPage) return;
+            Core.loadBankPage();
+            BankUtils.advancePage(()->{
+                Core.initRimSession();
+                isSearching = false;
+            }, Models.Container.getCurrentBankPage(Session.bankScreen) - 1);
+        }
+
+        ScreenUtils.activate(Session.getFront());
     }
 
     @SubscribeEvent(priority = EventPriority.LOWEST)
@@ -73,25 +120,7 @@ public class RefinedItemManagerFeature extends Feature {
 
     @SubscribeEvent
     public void onContainerSetContent(ContainerSetContentEvent.Post event) {
-        if(!Session.isActive() || preserveDefaultBehaviour) return;
-
-        McUtils.sendMessageToClient(Component.literal("pg-load"));
-
-        var snapAny = new ArrayList<>(InvUtils.pageLoadCallbacks);
-        InvUtils.pageLoadCallbacks.clear();
-        for(var comp : snapAny){
-            comp.complete(null);
-        }
-        snapAny.clear();
-
-        if(isSearching){
-            Core.loadBankPage();
-            BankUtils.advancePage(()->{
-                Core.initRimSession();
-                isSearching = false;
-            }, curBankPage);
-            curBankPage++;
-        }
+        handlePageUpdate();
     }
 
     @SubscribeEvent(priority = EventPriority.HIGHEST)
@@ -99,6 +128,5 @@ public class RefinedItemManagerFeature extends Feature {
         preserveDefaultBehaviour = false;
         Core.destroySession();
         isSearching = false;
-        curBankPage = 0;
     }
 }

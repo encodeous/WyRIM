@@ -35,10 +35,7 @@ public class BankUtils {
 
             ItemStack itemStack = container.getItem(i);
 
-            Optional<WynnItem> wynnItemOpt = Models.Item.getWynnItem(itemStack);
-            if (wynnItemOpt.isEmpty()) return new ArrayList<>();
-
-            int page = Models.Container.getCurrentBankPage(Session.bankScreen);
+            int page = Models.Container.getCurrentBankPage(Session.bankScreen) - 1;
 
             items.add(new RimMappedItem(itemStack, i + page * container.getContainerSize()));
         }
@@ -74,11 +71,24 @@ public class BankUtils {
 
     public static CompletableFuture<Void> advanceToPage(int dst){
         var screen = Session.getBacking();
-        var curPage = Models.Container.getCurrentBankPage(screen);
+        var curPage = Models.Container.getCurrentBankPage(screen) - 1;
         var delta = dst - curPage;
         if(delta == 0) return CompletableFuture.completedFuture(null);
         CompletableFuture<Void> cf;
-        if(Math.abs(delta) <= 1){
+
+        var jumpDelta = 10000;
+        int clickSlot = -1;
+        for(int i = 0; i < jumpDestinations.length; i++){
+            if(jumpDestinations[i] - 1 >= maxBankPage) continue;
+            if(Math.abs(jumpDestinations[i] - 1 - dst) < Math.abs(jumpDelta)){
+                jumpDelta = jumpDestinations[i] - 1 - dst;
+                clickSlot = jumpSlots[i];
+            }
+        }
+
+        if(Math.abs(delta) <= Math.abs(jumpDelta)){
+            cf = InvUtils.waitForPageLoad(2)
+                    .thenCompose((x)->advanceToPage(dst));
             if(delta > 0){
                 // go forward
                 ContainerUtils.clickOnSlot(
@@ -94,23 +104,14 @@ public class BankUtils {
                         GLFW.GLFW_MOUSE_BUTTON_LEFT,
                         screen.getMenu().getItems());
             }
-            cf = InvUtils.waitForPageLoad(2);
         }else{
-            int clickSlot = -1;
-            for(int i = 0; i < jumpDestinations.length; i++){
-                if(Math.abs(jumpDestinations[i] - curPage) < Math.abs(delta)){
-                    delta = jumpDestinations[i] - curPage;
-                    clickSlot = jumpSlots[i];
-                }
-            }
+            cf = InvUtils.waitForPageLoad(2)
+                    .thenCompose((x)->advanceToPage(dst));
             ContainerUtils.clickOnSlot(
                     clickSlot,
                     screen.getMenu().containerId,
                     GLFW.GLFW_MOUSE_BUTTON_LEFT,
                     screen.getMenu().getItems());
-            int finalDelta = delta;
-            cf = InvUtils.waitForPageLoad(2)
-                    .thenCompose((x)->advanceToPage(dst + finalDelta));
         }
         return cf;
     }

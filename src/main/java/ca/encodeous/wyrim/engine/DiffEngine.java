@@ -6,12 +6,15 @@ import ca.encodeous.wyrim.engine.interaction.RimItemOrigin;
 import ca.encodeous.wyrim.inventory.BankUtils;
 import ca.encodeous.wyrim.inventory.InvUtils;
 import ca.encodeous.wyrim.models.item.RimMappedItem;
+import com.wynntils.core.components.Managers;
 import net.minecraft.world.item.ItemStack;
 import oshi.util.tuples.Pair;
 
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.concurrent.CompletableFuture;
+
+import static ca.encodeous.wyrim.RimServices.Session;
 
 public class DiffEngine {
     public InvSnapshot appliedSnapshot;
@@ -36,8 +39,16 @@ public class DiffEngine {
             cmpl = cmpl.thenCompose(x->{
                 if(!x) return CompletableFuture.completedFuture(false);
                 return applyInteraction(itxn);
+            })
+            .thenCompose(x->{
+                var cCmpl = new CompletableFuture<Boolean>();
+                Managers.TickScheduler.scheduleLater(()->{
+                    cCmpl.complete(x);
+                }, 3);
+                return cCmpl;
             });
         }
+
 
         // replace snapshot
         appliedSnapshot = newSnapshot;
@@ -116,20 +127,24 @@ public class DiffEngine {
                     .toList();
             for(var cSrc : src){
                 if(cnt == 0) break;
-                var match = cSrc.removed.stream().filter(x->ItemStack.isSameItemSameTags(x.item, added.item)).toList();
+                var match = cSrc.removed.stream().filter(x->ItemStack.isSameItemSameTags(x.getA().item, added.item)).toList();
 
                 for(var mapped : match){
-                    int taken = Math.min(cnt, mapped.item.count);
+                    var item = mapped.getA();
+                    var orig = mapped.getB();
+                    int taken = Math.min(cnt, item.item.count);
                     if(taken != 0)
                         itxn.add(new RimInteraction(
                                 new RimItemOrigin(
-                                        mapped.originSlot, cSrc.posId == -1 ? RimItemOrigin.ItemSource.PLAYER : RimItemOrigin.ItemSource.BANK),
-                                mapped.item.copyWithCount(taken),
+                                        item.originSlot, cSrc.posId == -1 ? RimItemOrigin.ItemSource.PLAYER : RimItemOrigin.ItemSource.BANK),
+                                orig.copy(),
                                 new RimItemOrigin(
                                         added.originSlot, cur.posId == -1 ? RimItemOrigin.ItemSource.PLAYER : RimItemOrigin.ItemSource.BANK),
                                 original.copy(),
                                 taken));
-                    mapped.item.shrink(taken);
+                    original.grow(taken);
+                    item.item.shrink(taken);
+                    orig.shrink(taken);
                     cnt -= taken;
                 }
             }
@@ -152,41 +167,41 @@ public class DiffEngine {
             var c = current.get(i).item;
             if(ItemStack.isSameItemSameTags(o, c)){
                 var nis = InvUtils.copyItemStack(c);
-                if(o.count < c.count){
+                if(o.count < c.count) {
                     nis.setCount(c.count - o.count);
                     diff.added.add(
                             new Pair<>(
-                            new RimMappedItem(
-                                    nis,
-                                    original.get(i).originSlot
-                            ), o)
+                                    new RimMappedItem(
+                                            nis,
+                                            original.get(i).originSlot
+                                    ), o)
                     );
                 }
-                else if(o.count > c.count){
+                else if(o.count > c.count) {
                     nis.setCount(o.count - c.count);
                     diff.removed.add(
-                            new RimMappedItem(
-                                    nis,
-                                    original.get(i).originSlot
-                            )
+                            new Pair<>(
+                                    new RimMappedItem(
+                                            nis,
+                                            original.get(i).originSlot
+                                    ), o)
                     );
                 }
             }else {
                 if (!c.isEmpty())
-                    diff.added.add(new Pair<>(
-                            new RimMappedItem(
-                                    InvUtils.copyItemStack(c),
-                                    original.get(i).originSlot
-                            ),
-                            o
-                            )
+                    diff.added.add(
+                            new Pair<>(
+                                    new RimMappedItem(
+                                            InvUtils.copyItemStack(c),
+                                            original.get(i).originSlot
+                                    ), o)
                     );
                 if (!o.isEmpty())
-                    diff.removed.add(
+                    diff.removed.add(new Pair<>(
                             new RimMappedItem(
                                     InvUtils.copyItemStack(o),
                                     original.get(i).originSlot
-                            )
+                            ), o)
                     );
             }
         }
@@ -201,7 +216,7 @@ public class DiffEngine {
 
     private static class SlotDiff {
         public ArrayList<Pair<RimMappedItem, ItemStack>> added = new ArrayList<>();
-        public ArrayList<RimMappedItem> removed = new ArrayList<>();
+        public ArrayList<Pair<RimMappedItem, ItemStack>> removed = new ArrayList<>();
         public int posId;
     }
 }
