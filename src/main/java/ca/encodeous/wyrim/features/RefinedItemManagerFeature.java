@@ -77,7 +77,7 @@ public class RefinedItemManagerFeature extends Feature {
     private void handlePageUpdate() {
         if(!Session.isActive() || preserveDefaultBehaviour) return;
 
-        McUtils.sendMessageToClient(Component.literal("pg-load"));
+//        McUtils.sendMessageToClient(Component.literal("pg-load"));
 
 //        ScreenUtils.activate(Session.getBacking());
 
@@ -89,7 +89,6 @@ public class RefinedItemManagerFeature extends Feature {
         snapAny.clear();
 
         if(isSearching){
-//            if(Models.Container.getCurrentBankPage(Session.bankScreen) - 1 == curBankPage) return;
             Core.loadBankPage();
             BankUtils.advancePage(()->{
                 Core.initRimSession();
@@ -104,7 +103,6 @@ public class RefinedItemManagerFeature extends Feature {
     public void onSlotUpdate(ContainerSetSlotEvent.Post e){
         if(e.getSlot() == -1){
             if(e.getItemStack().isEmpty()) return;
-            McUtils.sendMessageToClient(Component.literal(e.getItemStack().toString()));
             if(!Session.isActive()){
                 InvUtils.itemSlotCallbacks.clear();
                 return;

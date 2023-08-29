@@ -135,65 +135,6 @@ public class RimMenu extends AbstractContainerMenu {
 
     @Override
     public void clicked(final int id, final int dragType, final ClickType clickType, final Player player) {
-        if(id == 83){
-            Core.diff.applySnapshot();
-            // experiment
-
-
-//            guiClick(81, GLFW.GLFW_MOUSE_BUTTON_LEFT);
-//            var pCompose = InvUtils.waitForCarryUpdate(1);
-//
-//            for(int i = 0; i < 20; i++){
-//                pCompose = pCompose.thenCompose((x)->{
-//                    guiClick(82, GLFW.GLFW_MOUSE_BUTTON_RIGHT);
-//                    return InvUtils.waitForCarryUpdate(2);
-//                });
-//            }
-//
-//            pCompose = pCompose.thenCompose((x)->{
-//                guiClick(81, GLFW.GLFW_MOUSE_BUTTON_LEFT);
-//                return CompletableFuture.completedFuture(null);
-//            });
-
-//            InvUtils.transfer(81, 82, optItem3.count)
-//                    .thenRun(()->{
-//                        setCarried(ItemStack.EMPTY);
-//                        super.clicked(id, dragType, clickType, player);
-//                        Storage.scanInventoriesForChanges();
-//                    });
-
-//            CompletableFuture<Boolean> cComp = InvUtils.transfer(81, 82, 64)
-//                    .thenCompose((x)->{
-//                        return CompletableFuture.completedFuture(true);
-//                    });
-//
-//            for(int i = 0; i < 32; i++) {
-//                int finalI = i;
-//                cComp = cComp.thenCompose((x) -> {
-//                            var completion = new CompletableFuture<Boolean>();
-//                            Managers.TickScheduler.scheduleLater(() -> {
-//                                if (finalI % 2 == 0) {
-//                                    InvUtils.transfer(82, 81, 64 - finalI)
-//                                            .thenRun(() -> {
-//                                                completion.complete(true);
-//                                            });
-//                                    completion.complete(true);
-//                                } else {
-//                                    InvUtils.transfer(81, 82, 64 - finalI)
-//                                            .thenRun(() -> {
-//                                                completion.complete(true);
-//                                            });
-//                                }
-//
-//                            }, 2);
-//                            return completion;
-//
-//                        }
-//
-//                );
-//            }
-            return;
-        }
         if(id < 0 && (clickType == ClickType.PICKUP || clickType == ClickType.QUICK_MOVE || Screen.hasShiftDown())) return;
         var optItem = InvUtils.getItemUniversal(id);
         if(optItem.isPresent()){

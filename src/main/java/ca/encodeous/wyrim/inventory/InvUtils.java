@@ -208,10 +208,10 @@ public class InvUtils {
     public static void guiClick(int id, int button){
         var player = McUtils.player();
 //        RimCoreService.isInjectionMode = true;
-        var menu = player.containerMenu;
+        var menu = Session.getFront().getMenu();
         var before = menu.getCarried();
         player.containerMenu = Session.getBacking().getMenu();
-        var slot = menu.getSlot(id);
+        var slot = player.containerMenu.getSlot(id);
         Session.getBacking().slotClicked(slot, id, button, ClickType.PICKUP);
         Session.getBacking().lastClickTime = 0;
         player.containerMenu = menu;

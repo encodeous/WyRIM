@@ -2,9 +2,11 @@ package ca.encodeous.wyrim.ui;
 
 import ca.encodeous.wyrim.RimServices;
 import ca.encodeous.wyrim.models.item.ItemPredicate;
+import ca.encodeous.wyrim.models.ui.CommitButton;
 import ca.encodeous.wyrim.services.ItemStorageService;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
+import com.wynntils.screens.characterselector.widgets.ClassSelectionEditButton;
 import net.minecraft.client.gui.ComponentPath;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.components.events.GuiEventListener;
@@ -56,6 +58,12 @@ public class RimScreen extends AbstractContainerScreen<RimMenu> {
         searchBox.setTextColor(16777215);
         searchBox.setHint(Component.literal("Search items"));
         addWidget(searchBox);
+
+        this.addRenderableWidget(new CommitButton(
+                (int) (leftPos + scrollBarOffsetX + 10),
+                (int) (topPos + imageHeight - 20),
+                (int) 20,
+                (int) 20));
     }
 
     @Override

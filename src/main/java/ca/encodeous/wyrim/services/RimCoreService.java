@@ -53,7 +53,7 @@ public class RimCoreService extends Service {
     }
 
     public void initRimSession(){
-        Cache.clearCache();
+//        Cache.clearCache();
         predicatesUpdated(); // update with empty predicates
         diff = new DiffEngine();
         diff.initDiffApplicationEngine();
@@ -69,11 +69,19 @@ public class RimCoreService extends Service {
 
     public void destroySession(){
         if(Session.isActive()){
-            Cache.setCachedItems(Storage.bankItemPool);
             Search.destroy();
             Storage.destroy();
             Session.endSession();
         }
+    }
+
+    public void commitSession(){
+        McUtils.sendMessageToClient(Component.literal("Applying Changes...").withStyle(ChatFormatting.GRAY));
+        Core.diff.applySnapshot().thenRun(()->{
+            Cache.setCachedItems(Storage.bankItemPool);
+            Core.destroySession();
+            McUtils.player().closeContainer();
+        });
     }
 
     public void clearBankCache(){

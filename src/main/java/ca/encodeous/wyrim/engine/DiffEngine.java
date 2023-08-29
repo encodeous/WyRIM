@@ -18,16 +18,13 @@ import static ca.encodeous.wyrim.RimServices.Session;
 
 public class DiffEngine {
     public InvSnapshot appliedSnapshot;
-    private boolean isCurrentSnapshotUpToDate;
-    public void markChanged(){
-
-    }
 
     public void initDiffApplicationEngine(){
         appliedSnapshot = InvSnapshot.makeSnapshot();
     }
 
     public CompletableFuture<Boolean> applySnapshot(){
+        if(!Session.isActive()) CompletableFuture.completedFuture(false);
         var newSnapshot = InvSnapshot.makeSnapshot();
         var fallbackSnapshot = InvSnapshot.makeSnapshot();
         var itxns = generateInteractions(newSnapshot);
@@ -44,7 +41,7 @@ public class DiffEngine {
                 var cCmpl = new CompletableFuture<Boolean>();
                 Managers.TickScheduler.scheduleLater(()->{
                     cCmpl.complete(x);
-                }, 3);
+                }, 2);
                 return cCmpl;
             });
         }
@@ -81,12 +78,6 @@ public class DiffEngine {
                             .thenCompose(y -> InvUtils.transfer(freeSlot, dstId, itxn.amount, itxn.srcStack, itxn.dstStack));
                 });
     }
-
-
-
-//    public boolean isCaughtUp(){
-//
-//    }
 
     /**
      * Fulfills the movements within the page and the inventory first
