@@ -7,7 +7,7 @@
   "authors": [],
   "contact": {},
   "license": "MIT",
-  "icon": "assets/wyrim/icon.png",
+  "icon": "assets/logo.png",
   "environment": "client",
   "entrypoints": {
     "main": [

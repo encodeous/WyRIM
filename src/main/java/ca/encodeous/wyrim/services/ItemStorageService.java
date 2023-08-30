@@ -1,16 +1,13 @@
 package ca.encodeous.wyrim.services;
 
-import ca.encodeous.wyrim.inventory.InvUtils;
 import ca.encodeous.wyrim.models.item.RimMappedItem;
 import com.wynntils.core.components.Service;
 import com.wynntils.utils.mc.McUtils;
 import net.minecraft.world.SimpleContainer;
-import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 import static ca.encodeous.wyrim.RimServices.*;
 
@@ -80,7 +77,6 @@ public class ItemStorageService extends Service {
     }
 
     public ItemStack depositItemStack(ItemStack item, ArrayList<RimMappedItem> pool){
-//        item = InvUtils.copyItemStack(item);
         int slot;
         while((slot = findMostOptimalSlot(item, pool)) != -1){
             var slotItem = pool.get(slot).item;

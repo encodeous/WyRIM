@@ -69,17 +69,12 @@ public class RefinedItemManagerFeature extends Feature {
             }
             else{
                 Session.setBacking(screen);
-//                handlePageUpdate();
             }
         }
     }
 
     private void handlePageUpdate() {
         if(!Session.isActive() || preserveDefaultBehaviour) return;
-
-//        McUtils.sendMessageToClient(Component.literal("pg-load"));
-
-//        ScreenUtils.activate(Session.getBacking());
 
         var snapAny = new ArrayList<>(InvUtils.pageLoadCallbacks);
         InvUtils.pageLoadCallbacks.clear();

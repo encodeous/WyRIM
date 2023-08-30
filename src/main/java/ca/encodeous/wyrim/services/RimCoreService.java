@@ -19,7 +19,6 @@ public class RimCoreService extends Service {
         super(List.of());
     }
     public DiffEngine diff;
-    public static boolean isInjectionMode = false;
 
     /**
      * Called when the search is updated with new predicates
@@ -42,8 +41,6 @@ public class RimCoreService extends Service {
         Storage.initSession();
         Session.setBacking(screen);
         Session.setFront(new RimScreen(McUtils.player()));
-        var nScreen = Session.getFront();
-//        ScreenUtils.activateWithoutDestroy(nScreen);
         if(Cache.hasCache()){
             Storage.bankItemPool.addAll(Cache.getCachedItems());
             initRimSession();
@@ -53,7 +50,6 @@ public class RimCoreService extends Service {
     }
 
     public void initRimSession(){
-//        Cache.clearCache();
         predicatesUpdated(); // update with empty predicates
         diff = new DiffEngine();
         diff.initDiffApplicationEngine();

@@ -7,7 +7,7 @@
     "WynntilsModMixin"
   ],
   "client": [
-    "AbstractContainerMenuMixin"
+
   ],
   "injectors": {
     "defaultRequire": 1

@@ -26,7 +26,6 @@ public class DiffEngine {
     public CompletableFuture<Boolean> applySnapshot(){
         if(!Session.isActive()) CompletableFuture.completedFuture(false);
         var newSnapshot = InvSnapshot.makeSnapshot();
-        var fallbackSnapshot = InvSnapshot.makeSnapshot();
         var itxns = generateInteractions(newSnapshot);
 
         CompletableFuture<Boolean> cmpl = CompletableFuture.completedFuture(true);

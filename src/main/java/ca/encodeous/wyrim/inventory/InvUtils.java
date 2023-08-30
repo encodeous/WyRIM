@@ -1,6 +1,5 @@
 package ca.encodeous.wyrim.inventory;
 
-import ca.encodeous.wyrim.engine.RetryState;
 import ca.encodeous.wyrim.engine.interaction.RimItemOrigin;
 import ca.encodeous.wyrim.models.item.RimMappedItem;
 import ca.encodeous.wyrim.services.RimCoreService;
@@ -11,24 +10,16 @@ import com.wynntils.handlers.item.ItemAnnotation;
 import com.wynntils.models.items.WynnItem;
 import com.wynntils.models.items.items.gui.GuiItem;
 import com.wynntils.utils.mc.McUtils;
-import it.unimi.dsi.fastutil.ints.Int2ObjectArrayMap;
-import net.minecraft.network.chat.Component;
-import net.minecraft.network.protocol.game.ServerboundContainerClickPacket;
 import net.minecraft.world.inventory.ClickType;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.ItemStackLinkedSet;
-import net.minecraft.world.item.Items;
 import net.vidageek.mirror.dsl.Mirror;
 import org.lwjgl.glfw.GLFW;
 
-import java.sql.Struct;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
-import java.util.function.Consumer;
-import java.util.function.Supplier;
 
 import static ca.encodeous.wyrim.RimServices.Session;
 import static ca.encodeous.wyrim.RimServices.Storage;
@@ -207,7 +198,6 @@ public class InvUtils {
 
     public static void guiClick(int id, int button){
         var player = McUtils.player();
-//        RimCoreService.isInjectionMode = true;
         var menu = Session.getFront().getMenu();
         var before = menu.getCarried();
         player.containerMenu = Session.getBacking().getMenu();
@@ -215,7 +205,6 @@ public class InvUtils {
         Session.getBacking().slotClicked(slot, id, button, ClickType.PICKUP);
         Session.getBacking().lastClickTime = 0;
         player.containerMenu = menu;
-        RimCoreService.isInjectionMode = false;
         menu.setCarried(before);
     }
 
